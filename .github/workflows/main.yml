@@ -1,0 +1,176 @@
+name: Deploy Foodgram to production
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOCKERHUB_USERNAME: nataliakosh17
+  FOODGRAM_BACKEND_IMAGE: nataliakosh17/foodgram_backend
+  FOODGRAM_FRONTEND_IMAGE: nataliakosh17/foodgram_frontend
+  FOODGRAM_GATEWAY_IMAGE: nataliakosh17/foodgram_gateway
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Run flake8
+      run: |
+        cd backend
+        pip install flake8
+        flake8 .
+    
+    # - name: Run backend tests
+    #   run: |
+    #     cd backend
+    #     python manage.py test
+    #   env:
+    #     DEBUG: True
+    #     SECRET_KEY: test-key
+    #     DB_ENGINE: django.db.backends.postgresql
+    #     DB_NAME: test_db
+    #     DB_USER: test_user
+    #     DB_PASSWORD: test_password
+    #     DB_HOST: localhost
+    #     DB_PORT: 5432
+    
+    # - name: Run frontend tests
+    #   run: |
+    #     cd frontend
+    #     npm ci
+    #     npm test -- --watchAll=false
+
+  build_and_push_to_docker_hub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ env.FOODGRAM_BACKEND_IMAGE }}:latest
+      
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ env.FOODGRAM_FRONTEND_IMAGE }}:latest
+      
+      - name: Build and push gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: ${{ env.FOODGRAM_GATEWAY_IMAGE }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push_to_docker_hub
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Create .env on server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          mkdir -p foodgram
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" > foodgram/.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> foodgram/.env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> foodgram/.env
+          echo "DB_HOST=db" >> foodgram/.env
+          echo "DB_PORT=5432" >> foodgram/.env
+          echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> foodgram/.env  
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> foodgram/.env
+          echo "DEBUG=${{ secrets.DEBUG }}" >> foodgram/.env
+    
+    - name: Copy files to server
+      uses: appleboy/scp-action@v0.1.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        source: "docker-compose.yml"
+        target: "foodgram/"
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          cd foodgram/
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker pull ${{ env.FOODGRAM_BACKEND_IMAGE }}:latest
+          docker pull ${{ env.FOODGRAM_FRONTEND_IMAGE }}:latest
+          docker pull ${{ env.FOODGRAM_GATEWAY_IMAGE }}:latest
+          docker compose down
+          docker compose up -d
+          docker compose exec backend python manage.py migrate --noinput
+          docker compose exec backend python manage.py collectstatic --noinput
+          docker system prune -af
+
+    - name: Send Telegram notification
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          Деплой для Foodgram завершён!
