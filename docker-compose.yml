@@ -30,11 +30,11 @@ services:
       - foodgram_network
 
   frontend:
-    image: nataliakosh17/foodgram_frontend:latest
+    image: nataliakosh17/foodgram_frontend
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static_volume:/usr/share/nginx/html
-    networks:
-      - foodgram_network
+      - static_volume:/frontend_static
 
   gateway:
     image: nataliakosh17/foodgram_gateway:latest
