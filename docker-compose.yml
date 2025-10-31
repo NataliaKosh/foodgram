@@ -32,7 +32,9 @@ services:
   frontend:
     image: nataliakosh17/foodgram_frontend
     env_file: .env
-    command: cp -r /app/build/. /frontend_static/
+    command: ["npm", "start"]
+    ports:
+      - "3000:3000"
     volumes:
       - static_volume:/frontend_static
 
