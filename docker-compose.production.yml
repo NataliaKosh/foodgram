@@ -30,13 +30,13 @@ services:
       - foodgram_network
 
   frontend:
-    image: nataliakosh17/foodgram_frontend
+    image: nataliakosh17/foodgram_frontend:latest
     env_file: .env
-    command: ["npm", "start"]
-    ports:
-      - "3000:3000"
+    command: cp -r /app/build/. /frontend_static/
     volumes:
       - static_volume:/frontend_static
+    networks:
+      - foodgram_network
 
   gateway:
     image: nataliakosh17/foodgram_gateway:latest
