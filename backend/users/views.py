@@ -12,7 +12,6 @@ from .serializers import (
     SetPasswordSerializer,
     SubscriptionSerializer,
     UserSerializer,
-    UserWithRecipesSerializer,
 )
 
 
@@ -50,7 +49,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
 
-    @action(detail=False, methods=['put', 'patch', 'delete'], 
+    @action(detail=False, methods=['put', 'patch', 'delete'],
             permission_classes=[permissions.IsAuthenticated],
             url_path='me/avatar')
     def me_avatar(self, request):
@@ -84,35 +83,35 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             if author == user:
                 return Response(
-                    {'detail': 'Нельзя подписаться на себя'}, 
+                    {'detail': 'Нельзя подписаться на себя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             if Subscription.objects.filter(user=user, author=author).exists():
                 return Response(
                     {'detail': 'Вы уже подписаны на этого пользователя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             subscription = Subscription.objects.create(user=user, author=author)
             serializer = SubscriptionSerializer(
-                subscription, 
+                subscription,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
             subscription_exists = Subscription.objects.filter(
-                user=user, 
+                user=user,
                 author=author
             ).exists()
-            
+
             if not subscription_exists:
                 return Response(
                     {'detail': 'Вы не подписаны на этого пользователя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             Subscription.objects.filter(user=user, author=author).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 

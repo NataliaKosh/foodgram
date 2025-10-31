@@ -40,11 +40,11 @@ class User(AbstractUser):
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-    
+
     def __str__(self):
         return self.email
 
@@ -68,7 +68,7 @@ class Subscription(models.Model):
         # auto_now_add=True,
         default=timezone.now
     )
-    
+
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
@@ -79,6 +79,6 @@ class Subscription(models.Model):
             )
         ]
         ordering = ['-created']
-    
+
     def __str__(self):
         return f'{self.user} подписан на {self.author}'

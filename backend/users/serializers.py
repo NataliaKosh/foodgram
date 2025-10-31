@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from api.fields import Base64ImageField
 from users.models import Subscription
-from recipes.models import Recipe
+
 
 User = get_user_model()
 
@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = [
@@ -46,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
 class SetAvatarSerializer(serializers.ModelSerializer):
     """Сериализатор для установки аватара."""
     avatar = Base64ImageField(required=True)
-    
+
     class Meta:
         model = User
         fields = ['avatar']
@@ -71,7 +71,7 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
         required=True,
         validators=[validate_password]
     )
-    
+
     class Meta:
         model = User
         fields = [
@@ -93,7 +93,7 @@ class UserWithRecipesSerializer(UserSerializer):
     """Сериализатор пользователя с рецептами и количеством рецептов."""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    
+
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + ['recipes', 'recipes_count']
 
@@ -188,7 +188,7 @@ class SetPasswordSerializer(serializers.Serializer):
     """Сериализатор для изменения пароля пользователя"""
     new_password = serializers.CharField(required=True, validators=[validate_password])
     current_password = serializers.CharField(required=True)
-    
+
     def validate_current_password(self, value):
         """Проверяет корректность текущего пароля."""
         user = self.context['request'].user

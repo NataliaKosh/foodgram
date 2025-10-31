@@ -14,7 +14,6 @@ from recipes.models import (
     ShoppingCart,
     RecipeIngredient,
 )
-from users.models import User
 
 from .serializers import (
     TagSerializer,
@@ -53,7 +52,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
     pagination_class = StandardPagination
-    
+
     def get_permissions(self):
         """
         Настройки разрешений в соответствии с спецификацией
@@ -64,7 +63,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
         else:
             permission_classes = [permissions.AllowAny]
-        
+
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -141,7 +140,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'detail': 'Учетные данные не были предоставлены.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-        
+
         recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
 
@@ -174,7 +173,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         """Скачать список покупок, только для авторизованных"""
         user = request.user
-        
+
         ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=user
         ).values(
@@ -183,20 +182,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
-        
+
         text_content = "Foodgram  Список покупок\n"
         text_content += "=" * 30 + "\n\n"
-        
+
         for ingredient in ingredients:
             text_content += (
                 f"• {ingredient['ingredient__name']} - "
                 f"{ingredient['total_amount']} "
                 f"{ingredient['ingredient__measurement_unit']}\n"
             )
-        
+
         text_content += f"\nВсего ингредиентов: {len(ingredients)}"
         text_content += "\n\nПриятного аппетита!"
-        
+
         response = HttpResponse(text_content, content_type='text/plain; charset=utf-8')
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
@@ -229,16 +228,16 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """Список избранных рецептов с фильтрацией по тегам"""
         queryset = self.get_queryset()
-        
+
         # Фильтрация по тегам
         tags = self.request.query_params.getlist('tags')
         if tags:
             queryset = queryset.filter(tags__slug__in=tags).distinct()
-        
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

@@ -23,16 +23,16 @@ class Tag(models.Model):
         unique=True,
         validators=[slug_validator]
     )
-    
+
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-    
+
     def __str__(self):
         return self.name
 
@@ -47,7 +47,7 @@ class Ingredient(models.Model):
         max_length=64,
         verbose_name='Единица измерения'
     )
-    
+
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -57,7 +57,7 @@ class Ingredient(models.Model):
                 name='unique_ingredient'
             )
         ]
-    
+
     def __str__(self):
         return f'{self.name} ({self.measurement_unit})'
 
@@ -100,12 +100,12 @@ class Recipe(models.Model):
         verbose_name='Дата создания',
         auto_now_add=True
     )
-    
+
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ['-created']
-    
+
     def __str__(self):
         return self.name
 
@@ -129,7 +129,7 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество',
         validators=[MinValueValidator(1)]
     )
-    
+
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
@@ -139,7 +139,7 @@ class RecipeIngredient(models.Model):
                 name='unique_recipe_ingredient'
             )
         ]
-    
+
     def __str__(self):
         return f'{self.ingredient.name} в {self.recipe.name}'
 
@@ -158,7 +158,7 @@ class Favorite(models.Model):
         related_name='favorites',
         on_delete=models.CASCADE
     )
-    
+
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
@@ -168,7 +168,7 @@ class Favorite(models.Model):
                 name='unique_favorite'
             )
         ]
-    
+
     def __str__(self):
         return f'{self.user} - {self.recipe}'
 
@@ -187,7 +187,7 @@ class ShoppingCart(models.Model):
         related_name='shopping_cart',
         on_delete=models.CASCADE
     )
-    
+
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
@@ -197,6 +197,6 @@ class ShoppingCart(models.Model):
                 name='unique_shopping_cart'
             )
         ]
-    
+
     def __str__(self):
         return f'{self.user} - {self.recipe}'
