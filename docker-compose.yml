@@ -31,7 +31,6 @@ services:
 
   frontend:
     image: nataliakosh17/foodgram_frontend:latest
-    restart: always
     volumes:
       - static_volume:/usr/share/nginx/html
     networks:
