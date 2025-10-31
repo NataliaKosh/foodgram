@@ -15,7 +15,9 @@ class Base64ImageField(serializers.ImageField):
             decoded_file = base64.b64decode(imgstr)
             file_extension = imghdr.what(None, decoded_file)
             if not file_extension:
-                raise serializers.ValidationError('Некорректный формат изображения')
+                raise serializers.ValidationError(
+                    'Некорректный формат изображения'
+                )
             file_name = f"{uuid.uuid4()}.{file_extension}"
             data = ContentFile(decoded_file, name=file_name)
         return super().to_internal_value(data)

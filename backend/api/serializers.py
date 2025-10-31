@@ -22,7 +22,9 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов в рецепте."""
     id = serializers.IntegerField(source='ingredient.id')
     name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -112,14 +114,22 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, value):
         """Проверяет наличие, уникальность и существование ингредиентов"""
         if not value:
-            raise serializers.ValidationError("Добавьте хотя бы один ингредиент")
+            raise serializers.ValidationError(
+                "Добавьте хотя бы один ингредиент"
+            )
 
         unique_ids = {item['id'] for item in value}
         if len(value) != len(unique_ids):
-            raise serializers.ValidationError("Ингредиенты не должны повторяться")
+            raise serializers.ValidationError(
+                "Ингредиенты не должны повторяться"
+            )
 
-        if Ingredient.objects.filter(id__in=unique_ids).count() != len(unique_ids):
-            raise serializers.ValidationError("Некоторые ингредиенты не найдены")
+        if Ingredient.objects.filter(
+            id__in=unique_ids
+        ).count() != len(unique_ids):
+            raise serializers.ValidationError(
+                "Некоторые ингредиенты не найдены"
+            )
 
         return value
 
@@ -159,8 +169,10 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        """Короткий формат рецепта с основными полями, как в RecipeListSerializer"""
-        return RecipeListSerializer(instance, context=self.context).data
+        """Короткий формат рецепта с основными полями"""
+        return RecipeListSerializer(
+            instance, context=self.context
+        ).data
 
 
 class RecipeCreateSerializer(BaseRecipeWriteSerializer):
@@ -173,7 +185,7 @@ class RecipeUpdateSerializer(BaseRecipeWriteSerializer):
     image = Base64ImageField(required=False)
 
     def validate(self, data):
-        """Проверяет наличие обязательных полей ingredients и tags при обновлении"""
+        """Проверяет наличие обязательных полей при обновлении"""
         if 'ingredients' not in data:
             raise serializers.ValidationError({
                 'ingredients': ['Это поле обязательно.']

@@ -60,7 +60,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['update', 'partial_update', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
+            permission_classes = [
+                permissions.IsAuthenticated, IsAuthorOrReadOnly
+            ]
         else:
             permission_classes = [permissions.AllowAny]
 
@@ -86,7 +88,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.exclude(favorites__user=user)
 
         # Фильтрация по корзине
-        is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart'
+        )
         if is_in_shopping_cart and user.is_authenticated:
             if is_in_shopping_cart == '1':
                 queryset = queryset.filter(shopping_cart__user=user)
@@ -196,7 +200,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         text_content += f"\nВсего ингредиентов: {len(ingredients)}"
         text_content += "\n\nПриятного аппетита!"
 
-        response = HttpResponse(text_content, content_type='text/plain; charset=utf-8')
+        response = HttpResponse(
+            text_content, content_type='text/plain; charset=utf-8'
+        )
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
         )
@@ -211,7 +217,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт"""
         recipe = get_object_or_404(Recipe, pk=pk)
-        short_link = request.build_absolute_uri(f'/api/recipes/{recipe.id}/')
+        short_link = request.build_absolute_uri(
+            f'/api/recipes/{recipe.id}/'
+        )
         return Response({'short-link': short_link})
 
 
@@ -223,7 +231,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Recipe.objects.filter(favorites__user=user).order_by('-favorites__id')
+        return Recipe.objects.filter(
+            favorites__user=user
+        ).order_by('-favorites__id')
 
     def list(self, request, *args, **kwargs):
         """Список избранных рецептов с фильтрацией по тегам"""

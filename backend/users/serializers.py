@@ -54,7 +54,9 @@ class SetAvatarSerializer(serializers.ModelSerializer):
     def validate_avatar(self, value):
         """Проверяет размер загружаемого аватара."""
         if value and hasattr(value, 'size') and value.size > 2 * 1024 * 1024:
-            raise serializers.ValidationError("Размер файла не должен превышать 2MB")
+            raise serializers.ValidationError(
+                "Размер файла не должен превышать 2MB"
+            )
         return value
 
     def update(self, instance, validated_data):
@@ -102,7 +104,9 @@ class UserWithRecipesSerializer(UserSerializer):
         request = self.context.get('request')
         recipes = obj.recipes.all()
 
-        recipes_limit = request.query_params.get('recipes_limit') if request else None
+        recipes_limit = (
+            request.query_params.get('recipes_limit') if request else None
+        )
         if recipes_limit and recipes_limit.isdigit():
             recipes = recipes[:int(recipes_limit)]
 
@@ -162,7 +166,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         recipes = obj.author.recipes.all()
 
-        recipes_limit = request.query_params.get('recipes_limit') if request else None
+        recipes_limit = (
+            request.query_params.get('recipes_limit') if request else None
+        )
         if recipes_limit and recipes_limit.isdigit():
             recipes = recipes[:int(recipes_limit)]
 
@@ -186,7 +192,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class SetPasswordSerializer(serializers.Serializer):
     """Сериализатор для изменения пароля пользователя"""
-    new_password = serializers.CharField(required=True, validators=[validate_password])
+    new_password = serializers.CharField(
+        required=True, validators=[validate_password]
+    )
     current_password = serializers.CharField(required=True)
 
     def validate_current_password(self, value):

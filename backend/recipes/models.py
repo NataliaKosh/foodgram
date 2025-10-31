@@ -15,7 +15,10 @@ class Tag(models.Model):
     )
     slug_validator = RegexValidator(
         regex=r'^[-a-zA-Z0-9_]+\Z',
-        message='Slug может содержать только латинские буквы, цифры, дефисы и подчеркивания'
+        message=(
+            'Slug может содержать только латинские буквы, цифры, '
+            'дефисы и подчеркивания'
+        )
     )
     slug = models.SlugField(
         max_length=32,

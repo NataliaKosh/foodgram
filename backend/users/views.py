@@ -41,24 +41,35 @@ class UserViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def me(self, request):
         """
         Получение данных текущего пользователя
         """
-        serializer = UserSerializer(request.user, context={'request': request})
+        serializer = UserSerializer(
+            request.user, context={'request': request}
+        )
         return Response(serializer.data)
 
-    @action(detail=False, methods=['put', 'patch', 'delete'],
-            permission_classes=[permissions.IsAuthenticated],
-            url_path='me/avatar')
+    @action(
+        detail=False,
+        methods=['put', 'patch', 'delete'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me/avatar'
+    )
     def me_avatar(self, request):
         """
         Управление аватаром
         """
         user = request.user
         if request.method in ['PUT', 'PATCH']:
-            serializer = SetAvatarSerializer(user, data=request.data, context={'request': request})
+            serializer = SetAvatarSerializer(
+                user, data=request.data, context={'request': request}
+            )
             serializer.is_valid(raise_exception=True)
             user = serializer.save()
             avatar_url = None
@@ -74,9 +85,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def subscribe(self, request, pk=None):
-        """Подписка и отписка на пользователя. """
+        """Подписка и отписка на пользователя."""
         user = request.user
         author = get_object_or_404(User, pk=pk)
 
@@ -87,13 +102,17 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if Subscription.objects.filter(user=user, author=author).exists():
+            if Subscription.objects.filter(
+                user=user, author=author
+            ).exists():
                 return Response(
                     {'detail': 'Вы уже подписаны на этого пользователя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            subscription = Subscription.objects.create(user=user, author=author)
+            subscription = Subscription.objects.create(
+                user=user, author=author
+            )
             serializer = SubscriptionSerializer(
                 subscription,
                 context={'request': request}
@@ -115,7 +134,11 @@ class UserViewSet(viewsets.ModelViewSet):
             Subscription.objects.filter(user=user, author=author).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def subscriptions(self, request):
         """Подписки с пагинацией"""
         user = request.user
@@ -131,10 +154,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return paginator.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['post'],
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def set_password(self, request):
         """Смена пароля"""
-        serializer = SetPasswordSerializer(data=request.data, context={'request': request})
+        serializer = SetPasswordSerializer(
+            data=request.data, context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
