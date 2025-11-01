@@ -40,6 +40,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +53,13 @@ INSTALLED_APPS = [
     'recipes',
     'api',
 ]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Мой Сайт",
+    "site_header": "Моя Админка", 
+    "site_brand": "Мой Бренд",
+    "welcome_sign": "Добро пожаловать!",
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
