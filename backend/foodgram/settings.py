@@ -56,7 +56,7 @@ INSTALLED_APPS = [
 
 JAZZMIN_SETTINGS = {
     "site_title": "Мой Сайт",
-    "site_header": "Моя Админка", 
+    "site_header": "Моя Админка",
     "site_brand": "Мой Бренд",
     "welcome_sign": "Добро пожаловать!",
 }
