@@ -27,8 +27,11 @@ RUN chmod -R 755 /code/media
 COPY . /code
 RUN chown -R appuser:appuser /code
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 USER appuser
 
 EXPOSE 8080
 
-CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "3"]
+ENTRYPOINT ["/entrypoint.sh"]
