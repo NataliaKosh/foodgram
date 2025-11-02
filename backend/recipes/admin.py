@@ -54,7 +54,7 @@ class RecipeIngredientInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'author', 'get_favorites_count', 
+        'name', 'author', 'get_favorites_count',
         'get_in_shopping_carts_count', 'cooking_time', 'created'
     )
     list_filter = ('tags', 'author', 'created')
@@ -78,7 +78,7 @@ class RecipeAdmin(admin.ModelAdmin):
         }),
         ('Статистика', {
             'fields': (
-                'get_favorites_count_display', 
+                'get_favorites_count_display',
                 'get_in_shopping_carts_count_display'
             ),
             'classes': ('collapse',)
