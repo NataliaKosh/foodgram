@@ -14,7 +14,9 @@ from .models import (
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
-    list_display = ('email', 'username', 'first_name', 'last_name', 'is_staff')
+    list_display = (
+        'email', 'username', 'first_name', 'last_name', 'is_staff'
+    )
     search_fields = ('email', 'username')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
     fieldsets = UserAdmin.fieldsets
@@ -25,7 +27,9 @@ class UserAdmin(UserAdmin):
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'author', 'created')
     list_filter = ('created',)
-    search_fields = ('user__email', 'user__username', 'author__email', 'author__username')
+    search_fields = (
+        'user__email', 'user__username', 'author__email', 'author__username'
+    )
 
 
 @admin.register(Tag)
@@ -49,7 +53,10 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'get_favorites_count', 'get_in_shopping_carts_count', 'cooking_time', 'created')
+    list_display = (
+        'name', 'author', 'get_favorites_count', 
+        'get_in_shopping_carts_count', 'cooking_time', 'created'
+    )
     list_filter = ('tags', 'author', 'created')
     search_fields = ('name', 'author__username', 'author__email')
     inlines = (RecipeIngredientInline,)
@@ -70,20 +77,29 @@ class RecipeAdmin(admin.ModelAdmin):
             'fields': ('tags',)
         }),
         ('Статистика', {
-            'fields': ('get_favorites_count_display', 'get_in_shopping_carts_count_display'),
+            'fields': (
+                'get_favorites_count_display', 
+                'get_in_shopping_carts_count_display'
+            ),
             'classes': ('collapse',)
         }),
     )
 
     def get_favorites_count_display(self, obj):
         return f'{self.get_favorites_count(obj)} раз(а)'
-    get_favorites_count_display.short_description = 'Число добавлений в избранное'
+    get_favorites_count_display.short_description = (
+        'Число добавлений в избранное'
+    )
 
     def get_in_shopping_carts_count_display(self, obj):
         return f'{self.get_in_shopping_carts_count(obj)} раз(а)'
-    get_in_shopping_carts_count_display.short_description = 'Число добавлений в корзины покупок'
+    get_in_shopping_carts_count_display.short_description = (
+        'Число добавлений в корзины покупок'
+    )
 
-    readonly_fields = ('get_favorites_count_display', 'get_in_shopping_carts_count_display')
+    readonly_fields = (
+        'get_favorites_count_display', 'get_in_shopping_carts_count_display'
+    )
 
 
 @admin.register(RecipeIngredient)
