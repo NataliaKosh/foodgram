@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from api.fields import Base64ImageField
 from users.models import Subscription
-
+from recipes.models import ShoppingCart
 
 User = get_user_model()
 
@@ -188,6 +188,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         """Возвращает количество рецептов автора подписки."""
         return obj.author.recipes.count()
+
+    def get_is_in_shopping_cart(self, obj):
+        """Проверяет, есть ли рецепты этого автора в корзине пользователя."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ShoppingCart.objects.filter(
+                user=request.user,
+                recipe__author=obj
+            ).exists()
+        return False
 
 
 class SetPasswordSerializer(serializers.Serializer):
