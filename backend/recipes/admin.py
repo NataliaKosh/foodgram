@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.admin import RelatedOnlyFieldListFilter
 from users.models import User, Subscription
 from .models import (
     Tag,
@@ -56,7 +57,11 @@ class RecipeAdmin(admin.ModelAdmin):
         'name', 'author', 'get_favorites_count',
         'get_in_shopping_carts_count', 'cooking_time', 'created'
     )
-    list_filter = ('tags', 'author', 'created')
+    list_filter = (
+        ('tags', RelatedOnlyFieldListFilter),
+        'author',
+        'created'
+    )
     search_fields = ('name', 'author__username', 'author__email')
     inlines = (RecipeIngredientInline,)
 
