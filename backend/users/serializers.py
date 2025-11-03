@@ -13,6 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    recipes_in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -41,6 +43,16 @@ class UserSerializer(serializers.ModelSerializer):
                 if request else obj.avatar.url
             )
         return None
+
+    def get_is_in_shopping_cart(self, obj):
+        """Проверяет, есть ли рецепты этого автора в корзине пользователя."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ShoppingCart.objects.filter(
+                user=request.user,
+                recipe__author=obj
+            ).exists()
+        return False
 
 
 class SetAvatarSerializer(serializers.ModelSerializer):
@@ -188,16 +200,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         """Возвращает количество рецептов автора подписки."""
         return obj.author.recipes.count()
-
-    def get_is_in_shopping_cart(self, obj):
-        """Проверяет, есть ли рецепты этого автора в корзине пользователя."""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return ShoppingCart.objects.filter(
-                user=request.user,
-                recipe__author=obj
-            ).exists()
-        return False
 
 
 class SetPasswordSerializer(serializers.Serializer):
