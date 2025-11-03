@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from api.fields import Base64ImageField
 from users.models import Subscription
-from recipes.models import ShoppingCart
+from recipes.models import ShoppingCart, Favorite
 
 User = get_user_model()
 
@@ -13,8 +13,10 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    # is_in_shopping_cart = serializers.SerializerMethodField()
+    # recipes_in_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    recipes_in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -44,15 +46,32 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return None
 
-    def get_is_in_shopping_cart(self, obj):
-        """Проверяет, есть ли рецепты этого автора в корзине пользователя."""
+    # def get_is_in_shopping_cart(self, obj):
+    #     """Проверяет, есть ли рецепты этого автора в корзине пользователя."""
+    #     request = self.context.get('request')
+    #     if request and request.user.is_authenticated:
+    #         return ShoppingCart.objects.filter(
+    #             user=request.user,
+    #             recipe__author=obj
+    #         ).exists()
+    #     return False
+    def _check_user_related(self, obj, model_cls):
+        """Проверяет, добавлен ли рецепт в избранное или в корзину покупок."""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return ShoppingCart.objects.filter(
+            return model_cls.objects.filter(
                 user=request.user,
-                recipe__author=obj
+                recipe=obj
             ).exists()
         return False
+
+    def get_is_favorited(self, obj):
+        """Проверяет, находится ли рецепт в избранном."""
+        return self._check_user_related(obj, Favorite)
+
+    def get_is_in_shopping_cart(self, obj):
+        """Проверяет, находится ли рецепт в корзине."""
+        return self._check_user_related(obj, ShoppingCart)
 
 
 class SetAvatarSerializer(serializers.ModelSerializer):
