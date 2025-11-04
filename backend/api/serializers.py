@@ -119,23 +119,23 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def _set_ingredients(recipe, ingredients_data):
         """Меняет ингредиенты для рецепта, удаляя старые"""
         recipe.recipe_ingredients.all().delete()
-        RecipeIngredient.objects.bulk_create([
+        RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
                 ingredient=data['id'],
                 amount=data['amount']
             ) for data in ingredients_data
-        ])
+        )
 
-    def validate_ingredients(self, value):
+    def validate_ingredients(self, ingredients):
         """Проверяет наличие, уникальность и существование ингредиентов"""
-        if not value:
+        if not ingredients:
             raise serializers.ValidationError(
                 "Добавьте хотя бы один ингредиент"
             )
 
-        unique_ids = {item['id'].id for item in value}
-        if len(value) != len(unique_ids):
+        unique_ids = {item['id'].id for item in ingredients}
+        if len(ingredients) != len(unique_ids):
             raise serializers.ValidationError(
                 "Ингредиенты не должны повторяться"
             )
@@ -147,17 +147,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 "Некоторые ингредиенты не найдены"
             )
 
-        return value
+        return ingredients
 
-    def validate_tags(self, value):
+    def validate_tags(self, tags):
         """Проверяет наличие и существование тегов"""
-        if not value:
+        if not tags:
             raise serializers.ValidationError("Добавьте хотя бы один тег")
 
-        if Tag.objects.filter(id__in=value).count() != len(value):
+        if Tag.objects.filter(id__in=tags).count() != len(tags):
             raise serializers.ValidationError("Некоторые теги не найдены")
 
-        return value
+        return tags
 
     def create(self, validated_data):
         """Создает новый рецепт с тегами и ингредиентами"""
