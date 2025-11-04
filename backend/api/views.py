@@ -1,6 +1,7 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
@@ -44,66 +45,23 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
     pagination_class = StandardPagination
-
-    def get_permissions(self):
-        """
-        Настройки разрешений в соответствии с спецификацией
-        """
-        if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            permission_classes = [
-                permissions.IsAuthenticated, IsAuthorOrReadOnly
-            ]
-        else:
-            permission_classes = [permissions.AllowAny]
-
-        return [permission() for permission in permission_classes]
+    permission_classes = [IsAuthorOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = {
+        'author': ['exact'],
+        'tags__slug': ['in'],
+        'favorites__user': ['exact'],
+        'shopping_cart__user': ['exact'],
+    }
+    ordering_fields = ['created']
+    ordering = ['-created']
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeWriteSerializer
         return RecipeSerializer
-
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        user = self.request.user
-
-        # Фильтрация по избранному
-        is_favorited = self.request.query_params.get('is_favorited')
-        if is_favorited and user.is_authenticated:
-            if is_favorited == '1':
-                queryset = queryset.filter(favorites__user=user)
-            elif is_favorited == '0':
-                queryset = queryset.exclude(favorites__user=user)
-
-        # Фильтрация по корзине
-        is_in_shopping_cart = self.request.query_params.get(
-            'is_in_shopping_cart'
-        )
-        if is_in_shopping_cart and user.is_authenticated:
-            if is_in_shopping_cart == '1':
-                queryset = queryset.filter(shopping_cart__user=user)
-            elif is_in_shopping_cart == '0':
-                queryset = queryset.exclude(shopping_cart__user=user)
-
-        # Фильтрация по автору
-        author_id = self.request.query_params.get('author')
-        if author_id:
-            queryset = queryset.filter(author_id=author_id)
-
-        # Фильтрация по тегам
-        tags = self.request.query_params.getlist('tags')
-        if tags:
-            queryset = queryset.filter(tags__slug__in=tags).distinct()
-
-        # Сортировка по дате
-        queryset = queryset.order_by('-created')
-
-        return queryset.select_related('author').prefetch_related(
-            'tags', 'recipe_ingredients__ingredient'
-        )
 
     def _save_with_author(self, serializer):
         serializer.save(author=self.request.user)
