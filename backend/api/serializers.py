@@ -21,6 +21,25 @@ RECIPE_FIELDS = [
     'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
 ]
 
+def validate_unique_items(items, field_name):
+    """Проверка наличия и уникальности элементов списка."""
+    if not items:
+        raise serializers.ValidationError(f'Добавьте хотя бы один {field_name}')
+
+    seen_ids = set()
+    duplicates = []
+    for item in items:
+        item_id = getattr(item, 'id', item)
+        if item_id in seen_ids:
+            duplicates.append(item_id)
+        seen_ids.add(item_id)
+
+    if duplicates:
+        raise serializers.ValidationError(
+            f'{field_name.capitalize()} не должны повторяться: {duplicates}'
+        )
+
+    return items
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов."""
@@ -128,36 +147,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate_ingredients(self, ingredients):
-        """Проверяет наличие, уникальность и существование ингредиентов"""
-        if not ingredients:
-            raise serializers.ValidationError(
-                "Добавьте хотя бы один ингредиент"
-            )
-
-        unique_ids = {item['id'].id for item in ingredients}
-        if len(ingredients) != len(unique_ids):
-            raise serializers.ValidationError(
-                "Ингредиенты не должны повторяться"
-            )
-
-        if Ingredient.objects.filter(
-            id__in=unique_ids
-        ).count() != len(unique_ids):
-            raise serializers.ValidationError(
-                "Некоторые ингредиенты не найдены"
-            )
-
-        return ingredients
+        """Проверяет наличие и уникальность ингредиентов"""
+        return validate_unique_items(ingredients, 'ингредиент')
 
     def validate_tags(self, tags):
-        """Проверяет наличие и существование тегов"""
-        if not tags:
-            raise serializers.ValidationError("Добавьте хотя бы один тег")
-
-        if Tag.objects.filter(id__in=tags).count() != len(tags):
-            raise serializers.ValidationError("Некоторые теги не найдены")
-
-        return tags
+        """Проверяет наличие и уникальность тегов"""
+        return validate_unique_items(tags, 'тег')
 
     def create(self, validated_data):
         """Создает новый рецепт с тегами и ингредиентами"""
