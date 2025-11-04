@@ -33,7 +33,11 @@ def validate_unique_items(items, field_name):
     seen_ids = set()
     duplicates = []
     for item in items:
-        item_id = item.get('id') if isinstance(item, dict) else getattr(item, 'id', item)
+        if isinstance(item, dict):
+            item_id = item.get('id')
+        else:
+            item_id = getattr(item, 'id', item)
+
         if item_id in seen_ids:
             duplicates.append(item_id)
         seen_ids.add(item_id)
