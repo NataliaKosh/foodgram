@@ -38,7 +38,9 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
 class IngredientInRecipeCreateSerializer(serializers.Serializer):
     """Сериализатор ингредиентов при создании/обновлении рецепта"""
-    id = serializers.IntegerField()
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
     amount = serializers.IntegerField(validators=[MinValueValidator(1)])
 
 
@@ -111,7 +113,7 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
-                ingredient_id=data['id'],
+                ingredient=data['id'],
                 amount=data['amount']
             ) for data in ingredients_data
         ])
@@ -123,7 +125,7 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
                 "Добавьте хотя бы один ингредиент"
             )
 
-        unique_ids = {item['id'] for item in value}
+        unique_ids = {item['id'].id for item in value}
         if len(value) != len(unique_ids):
             raise serializers.ValidationError(
                 "Ингредиенты не должны повторяться"
