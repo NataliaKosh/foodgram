@@ -18,6 +18,6 @@ class Base64ImageField(serializers.ImageField):
                 raise serializers.ValidationError(
                     'Некорректный формат изображения'
                 )
-            file_name = f"{uuid.uuid4()}.{file_extension}"
+            file_name = f'{uuid.uuid4()}.{file_extension}'
             data = ContentFile(decoded_file, name=file_name)
         return super().to_internal_value(data)

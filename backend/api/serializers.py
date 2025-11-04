@@ -1,12 +1,16 @@
 from django.core.validators import MinValueValidator
+
 from rest_framework import serializers
 
 from recipes.models import (
-    Favorite, Ingredient, Recipe, RecipeIngredient,
-    ShoppingCart, Tag
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
 )
 from users.serializers import UserSerializer
-
 from .fields import Base64ImageField
 
 
@@ -15,20 +19,21 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ['id', 'name', 'measurement_unit']
-        read_only_fields = ['id']
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов в рецепте."""
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
-    measurement_unit = serializers.CharField(
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
     )
+    amount = serializers.ReadOnlyField()
 
     class Meta:
         model = RecipeIngredient
         fields = ['id', 'name', 'measurement_unit', 'amount']
+        read_only_fields = ['id', 'name', 'measurement_unit', 'amount']
 
 
 class IngredientInRecipeCreateSerializer(serializers.Serializer):
