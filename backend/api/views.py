@@ -18,7 +18,7 @@ from recipes.models import (
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
-    RecipeListSerializer,
+    RecipeSerializer,
     RecipeCreateSerializer,
     RecipeUpdateSerializer,
     RecipeMinifiedSerializer,
@@ -73,7 +73,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateSerializer
         elif self.action in ['update', 'partial_update']:
             return RecipeUpdateSerializer
-        return RecipeListSerializer
+        return RecipeSerializer
 
     def get_queryset(self):
         queryset = Recipe.objects.all()

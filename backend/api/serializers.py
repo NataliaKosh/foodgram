@@ -118,7 +118,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     @staticmethod
     def _set_ingredients(recipe, ingredients_data):
         """Меняет ингредиенты для рецепта, удаляя старые"""
-        recipe.recipe_ingredients.all().delete()
+        recipe.recipe_ingredients.delete()
         RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
