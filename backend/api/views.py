@@ -19,8 +19,7 @@ from .serializers import (
     TagSerializer,
     IngredientSerializer,
     RecipeSerializer,
-    RecipeCreateSerializer,
-    RecipeUpdateSerializer,
+    RecipeWriteSerializer,
     RecipeMinifiedSerializer,
 )
 from .pagination import StandardPagination
@@ -69,10 +68,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ['create']:
-            return RecipeCreateSerializer
-        elif self.action in ['update', 'partial_update']:
-            return RecipeUpdateSerializer
+        if self.action in ['create', 'update', 'partial_update']:
+            return RecipeWriteSerializer
         return RecipeSerializer
 
     def get_queryset(self):

@@ -16,6 +16,7 @@ from .fields import Base64ImageField
 
 MIN_COOKING_TIME = 1
 MIN_INGREDIENT_AMOUNT = 1
+MIN_RECIPE_FIELDS = ['id', 'name', 'image', 'cooking_time']
 RECIPE_FIELDS = [
     'id', 'tags', 'author', 'ingredients', 'is_favorited',
     'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
@@ -127,7 +128,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         child=serializers.IntegerField(),
         allow_empty=False
     )
-    image = Base64ImageField()
+    image = Base64ImageField(required=True)
     cooking_time = serializers.IntegerField(
         validators=[MinValueValidator(MIN_COOKING_TIME)],
         help_text="Время приготовления в минутах"
@@ -137,6 +138,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ['id', 'ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['image'].required = False              
 
     @staticmethod
     def _set_ingredients(recipe, ingredients_data):
@@ -174,9 +180,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+        instance = super().update(instance, validated_data)
 
         instance.tags.set(tags_data)
         self._set_ingredients(instance, ingredients_data)
@@ -184,37 +188,15 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        """Короткий формат рецепта с основными полями"""
+        """Возвращает сериализованные данные через RecipeSerializer"""
         return RecipeSerializer(
             instance, context=self.context
         ).data
-
-
-class RecipeCreateSerializer(RecipeWriteSerializer):
-    """Сериализатор для создания рецепта с обязательным изображением"""
-    image = Base64ImageField(required=True)
-
-
-class RecipeUpdateSerializer(RecipeWriteSerializer):
-    """Сериализатор для обновления рецепта с необязательным изображением"""
-    image = Base64ImageField(required=False)
-
-    def validate(self, data):
-        """Проверяет наличие обязательных полей при обновлении"""
-        if 'ingredients' not in data:
-            raise serializers.ValidationError({
-                'ingredients': ['Это поле обязательно.']
-            })
-        if 'tags' not in data:
-            raise serializers.ValidationError({
-                'tags': ['Это поле обязательно.']
-            })
-        return super().validate(data)
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
     """Сериализатор для минимального представления рецепта"""
     class Meta:
         model = Recipe
-        fields = ['id', 'name', 'image', 'cooking_time']
-        read_only_fields = ['id']
+        fields = MIN_RECIPE_FIELDS
+        read_only_fields = [MIN_RECIPE_FIELDS[0]]
