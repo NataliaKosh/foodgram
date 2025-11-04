@@ -142,7 +142,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance:
-            self.fields['image'].required = False              
+            self.fields['image'].required = False
 
     @staticmethod
     def _set_ingredients(recipe, ingredients_data):
