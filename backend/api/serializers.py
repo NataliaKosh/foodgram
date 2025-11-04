@@ -21,10 +21,13 @@ RECIPE_FIELDS = [
     'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
 ]
 
+
 def validate_unique_items(items, field_name):
     """Проверка наличия и уникальности элементов списка."""
     if not items:
-        raise serializers.ValidationError(f'Добавьте хотя бы один {field_name}')
+        raise serializers.ValidationError(
+            f'Добавьте хотя бы один {field_name}'
+        )
 
     seen_ids = set()
     duplicates = []
@@ -40,6 +43,7 @@ def validate_unique_items(items, field_name):
         )
 
     return items
+
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов."""
