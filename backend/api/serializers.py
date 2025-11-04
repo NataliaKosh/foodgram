@@ -45,6 +45,7 @@ def validate_unique_items(items, field_name):
 
     return items
 
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов."""
     class Meta:
