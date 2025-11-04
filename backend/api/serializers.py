@@ -14,6 +14,14 @@ from users.serializers import UserSerializer
 from .fields import Base64ImageField
 
 
+MIN_COOKING_TIME = 1
+MIN_INGREDIENT_AMOUNT = 1
+RECIPE_FIELDS = [
+    'id', 'tags', 'author', 'ingredients', 'is_favorited',
+    'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
+]
+
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов."""
     class Meta:
@@ -41,7 +49,7 @@ class IngredientInRecipeCreateSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
-    amount = serializers.IntegerField(validators=[MinValueValidator(1)])
+    amount = serializers.IntegerField(validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)])
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -49,10 +57,9 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'name', 'slug']
-        read_only_fields = ['id']
 
 
-class RecipeListSerializer(serializers.ModelSerializer):
+class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для списка рецептов."""
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
@@ -66,11 +73,8 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = [
-            'id', 'tags', 'author', 'ingredients', 'is_favorited',
-            'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
-        ]
-        read_only_fields = ['id']
+        fields = RECIPE_FIELDS
+        read_only_fields = [RECIPE_FIELDS[0]]
 
     def _check_user_related(self, obj, model_cls):
         """Проверяет, добавлен ли рецепт в избранное или в корзину покупок."""
@@ -82,16 +86,16 @@ class RecipeListSerializer(serializers.ModelSerializer):
             ).exists()
         return False
 
-    def get_is_favorited(self, obj):
+    def get_is_favorited(self, recipe):
         """Проверяет, находится ли рецепт в избранном."""
-        return self._check_user_related(obj, Favorite)
+        return self._check_user_related(recipe, Favorite)
 
-    def get_is_in_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, recipe):
         """Проверяет, находится ли рецепт в корзине."""
-        return self._check_user_related(obj, ShoppingCart)
+        return self._check_user_related(recipe, ShoppingCart)
 
 
-class BaseRecipeWriteSerializer(serializers.ModelSerializer):
+class RecipeWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для создани и обновления рецептов"""
     ingredients = IngredientInRecipeCreateSerializer(many=True)
     tags = serializers.ListField(
@@ -99,6 +103,10 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
         allow_empty=False
     )
     image = Base64ImageField()
+    cooking_time = serializers.IntegerField(
+        validators=[MinValueValidator(MIN_COOKING_TIME)],
+        help_text="Время приготовления в минутах"
+    )
 
     class Meta:
         model = Recipe
@@ -177,17 +185,17 @@ class BaseRecipeWriteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Короткий формат рецепта с основными полями"""
-        return RecipeListSerializer(
+        return RecipeSerializer(
             instance, context=self.context
         ).data
 
 
-class RecipeCreateSerializer(BaseRecipeWriteSerializer):
+class RecipeCreateSerializer(RecipeWriteSerializer):
     """Сериализатор для создания рецепта с обязательным изображением"""
     image = Base64ImageField(required=True)
 
 
-class RecipeUpdateSerializer(BaseRecipeWriteSerializer):
+class RecipeUpdateSerializer(RecipeWriteSerializer):
     """Сериализатор для обновления рецепта с необязательным изображением"""
     image = Base64ImageField(required=False)
 
