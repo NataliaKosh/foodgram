@@ -49,8 +49,9 @@ class IngredientInRecipeCreateSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
-    amount = serializers.IntegerField(validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)])
-
+    amount = serializers.IntegerField(
+        validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)]
+    )
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для тегов."""
@@ -112,7 +113,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ['id', 'ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time']
-        read_only_fields = ['id']
 
     @staticmethod
     def _set_ingredients(recipe, ingredients_data):
