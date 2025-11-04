@@ -53,6 +53,7 @@ class IngredientInRecipeCreateSerializer(serializers.Serializer):
         validators=[MinValueValidator(MIN_INGREDIENT_AMOUNT)]
     )
 
+
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор для тегов."""
     class Meta:
