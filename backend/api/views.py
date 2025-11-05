@@ -63,10 +63,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeWriteSerializer
         return RecipeSerializer
 
-    def _save_with_author(self, serializer):
+    def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    perform_create = _save_with_author
-    perform_update = _save_with_author
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         detail=True,
@@ -88,16 +89,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def _add_remove_relation(self, request, pk, model):
         """Метод для добавления и удаления связей"""
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Учетные данные не были предоставлены.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
 
         if request.method == 'POST':
+            recipe = get_object_or_404(Recipe, pk=pk)
             if model.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
                     {'errors': 'Рецепт уже добавлен'},
@@ -107,16 +102,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = RecipeMinifiedSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            try:
-                obj = model.objects.get(user=user, recipe=recipe)
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except model.DoesNotExist:
-                return Response(
-                    {'errors': 'Рецепт не был добавлен'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        deleted, _ = model.objects.filter(user=user, recipe_id=pk).delete()
+        if deleted:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {'errors': 'Рецепт не был добавлен'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=False,
