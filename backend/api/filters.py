@@ -5,7 +5,9 @@ from recipes.models import Recipe
 class RecipeFilter(django_filters.FilterSet):
     """Фильтр для рецептов по автору, тегам, избранному и списку покупок"""
     is_favorited = django_filters.BooleanFilter(method='filter_favorited')
-    is_in_shopping_cart = django_filters.BooleanFilter(method='filter_shopping_cart')
+    is_in_shopping_cart = django_filters.BooleanFilter(
+        method='filter_shopping_cart'
+    )
 
     class Meta:
         model = Recipe
