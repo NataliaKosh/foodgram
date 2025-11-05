@@ -44,7 +44,16 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
-    queryset = Recipe.objects.all()
+    queryset = (
+        Recipe.objects.all()
+        .select_related('author')
+        .prefetch_related(
+            'tags',
+            'recipe_ingredients__ingredient',
+            'favorites',
+            'shopping_cart',
+        )
+    )
     serializer_class = RecipeSerializer
     pagination_class = StandardPagination
     permission_classes = [IsAuthorOrReadOnly]
@@ -90,12 +99,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def _add_remove_relation(self, request, pk, model):
         """Метод для добавления и удаления связей"""
         user = request.user
+        action_name = 'избранное' if model is Favorite else 'список покупок'
 
         if request.method == 'POST':
             recipe = get_object_or_404(Recipe, pk=pk)
             if model.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    {'errors': 'Рецепт уже добавлен'},
+                    {
+                        'errors': (
+                            f'Рецепт "{recipe.name}" уже добавлен '
+                            f'в {action_name}'
+                        )
+                    },
                     status=status.HTTP_400_BAD_REQUEST
                 )
             model.objects.create(user=user, recipe=recipe)
