@@ -4,7 +4,9 @@ from recipes.models import Recipe
 
 class RecipeFilter(django_filters.FilterSet):
     """ Фильтр для отображения избранного и списка покупок"""
-    is_favorited = django_filters.filters.NumberFilter(method='filter_favorited')
+    is_favorited = django_filters.filters.NumberFilter(
+        method='filter_favorited'
+    )
     is_in_shopping_cart = django_filters.filters.NumberFilter(
         method='filter_shopping_cart'
     )
