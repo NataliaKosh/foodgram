@@ -2,11 +2,13 @@ from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.urls import reverse
 
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
+
 
 from recipes.models import (
     Tag,
@@ -154,39 +156,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
-        """Получить короткую ссылку на рецепт"""
-        recipe = get_object_or_404(Recipe, pk=pk)
-        short_link = request.build_absolute_uri(
-            f'/api/recipes/{recipe.id}/'
+        """Получить короткую ссылку на рецепт."""
+        if not Recipe.objects.filter(pk=pk).exists():
+            raise NotFound('Рецепт не найден')
+        url = request.build_absolute_uri(
+            reverse('recipe-short-link', kwargs={'pk': pk})
         )
-        return Response({'short-link': short_link})
 
-
-class FavoriteViewSet(viewsets.ModelViewSet):
-    """Вьюсет для избранных рецептов"""
-    serializer_class = RecipeMinifiedSerializer
-    pagination_class = StandardPagination
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Recipe.objects.filter(
-            favorites__user=user
-        ).order_by('-favorites__id')
-
-    def list(self, request, *args, **kwargs):
-        """Список избранных рецептов с фильтрацией по тегам"""
-        queryset = self.get_queryset()
-
-        # Фильтрация по тегам
-        tags = self.request.query_params.getlist('tags')
-        if tags:
-            queryset = queryset.filter(tags__slug__in=tags).distinct()
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({'short-link': url})
