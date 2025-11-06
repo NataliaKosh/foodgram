@@ -19,16 +19,13 @@ class RecipeFilter(django_filters.FilterSet):
         if not user.is_authenticated:
             return queryset.none() if value else queryset
         if value:
-            return queryset.filter(favorites__user=user)
-        return queryset.exclude(favorites__user=user)
+            return queryset.filter(favorites__user=user).distinct()
+        return queryset.exclude(favorites__user=user).distinct()
 
     def filter_shopping_cart(self, queryset, name, value):
         user = self.request.user
         if not user.is_authenticated:
-            return queryset
-        # Преобразуем строку в bool
-        if isinstance(value, str):
-            value = value.lower() in ('true', '1', 't', 'yes')
+            return queryset.none() if value else queryset
         if value:
-            return queryset.filter(shopping_cart__user=user)
-        return queryset.exclude(shopping_cart__user=user)
+            return queryset.filter(shopping_cart__user=user).distinct()
+        return queryset.exclude(shopping_cart__user=user).distinct()
