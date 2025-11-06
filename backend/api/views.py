@@ -46,13 +46,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeSerializer
+    serializer_class = RecipeSerializer
     pagination_class = StandardPagination
     permission_classes = [IsAuthorOrReadOnly]
-    # filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    # filterset_class = RecipeFilter
-    # ordering_fields = ['created']
-    # ordering = ['-created']
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = RecipeFilter
+    ordering_fields = ['created']
+    ordering = ['-created']
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
