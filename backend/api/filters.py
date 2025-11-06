@@ -3,15 +3,12 @@ from recipes.models import Recipe
 
 
 class RecipeFilter(django_filters.FilterSet):
-    is_favorited = django_filters.BooleanFilter(method='filter_favorited')
-    is_in_shopping_cart = django_filters.BooleanFilter(
+    """ Фильтр для отображения избранного и списка покупок"""
+    is_favorited = django_filters.filters.NumberFilter(method='filter_favorited')
+    is_in_shopping_cart = django_filters.filters.NumberFilter(
         method='filter_shopping_cart'
     )
     tags = django_filters.AllValuesMultipleFilter(field_name='tags__slug')
-
-    class Meta:
-        model = Recipe
-        fields = ['author', 'tags']
 
     def filter_favorited(self, queryset, name, value):
         user = self.request.user
@@ -34,3 +31,7 @@ class RecipeFilter(django_filters.FilterSet):
             else queryset.exclude(shopping_cart__user=user)
         )
         return qs.distinct()
+
+        class Meta:
+            model = Recipe
+            fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
