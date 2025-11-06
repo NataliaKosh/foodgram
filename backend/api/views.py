@@ -8,7 +8,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
-from api.services.shopping_list import generate_shopping_list_text
 from recipes.models import (
     Tag,
     Ingredient,
@@ -24,6 +23,7 @@ from .serializers import (
     RecipeWriteSerializer,
     RecipeMinifiedSerializer,
 )
+from .services.shopping_list import generate_shopping_list_text
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
 from .filters import RecipeFilter
