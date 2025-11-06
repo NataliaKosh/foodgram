@@ -59,8 +59,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeWriteSerializer
         return RecipeSerializer
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        queryset = DjangoFilterBackend().filter_queryset(self.request, queryset, self)
+
         return queryset.distinct()
 
     def perform_create(self, serializer):
