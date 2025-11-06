@@ -54,20 +54,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created']
     ordering = ['-created']
 
+    def get_queryset(self):
+        """Возвращаем базовый queryset, без фильтрации"""
+        return Recipe.objects.all()
+
+    def filter_queryset(self, queryset):
+        """Фильтрация рецептов (корзина, избранное и теги)"""
+        queryset = super().filter_queryset(queryset)
+        return queryset.distinct()
+
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeWriteSerializer
         return RecipeSerializer
-
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        queryset = DjangoFilterBackend().filter_queryset(
-            self.request,
-            queryset,
-            self
-        )
-
-        return queryset.distinct()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
