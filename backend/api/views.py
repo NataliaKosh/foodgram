@@ -55,11 +55,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ordering = ['-created']
 
     def get_queryset(self):
-        """Возвращаем базовый queryset, без фильтрации"""
         return Recipe.objects.all()
 
     def filter_queryset(self, queryset):
-        """Фильтрация рецептов (корзина, избранное и теги)"""
         queryset = super().filter_queryset(queryset)
         return queryset.distinct()
 
