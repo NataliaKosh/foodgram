@@ -20,10 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dtd6(f3z4#=hsvn92daf-mcmn2w(pw660g_9xklg!xo_*znr*n'
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
     'nataliayap.ddns.net',
@@ -57,10 +60,10 @@ INSTALLED_APPS = [
 ]
 
 JAZZMIN_SETTINGS = {
-    "site_title": "Мой Сайт",
-    "site_header": "Моя Админка",
-    "site_brand": "Мой Бренд",
-    "welcome_sign": "Добро пожаловать!",
+    'site_title': 'Мой Сайт',
+    'site_header': 'Моя Админка',
+    'site_brand': 'Мой Бренд',
+    'welcome_sign': 'Добро пожаловать!',
 }
 
 MIDDLEWARE = [
@@ -116,6 +119,14 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'set_password': ['rest_framework.permissions.IsAuthenticated'],
     },
+    'MESSAGES': {
+        'activation': 'Аккаунт успешно активирован.',
+        'confirmation': 'Email успешно подтвержден.',
+        'password_reset': 'Инструкции по восстановлению пароля отправлены.',
+        'password_updated': 'Пароль успешно обновлён.',
+        'username_reset': 'Инструкции по восстановлению имени пользователя отправлены.',
+        'username_updated': 'Имя пользователя успешно обновлено.',
+    },
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
 }
@@ -159,9 +170,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
+
+USE_L10N = True
 
 USE_I18N = True
 
