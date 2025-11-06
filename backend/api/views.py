@@ -55,7 +55,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ordering = ['-created']
 
     def get_queryset(self):
-        return Recipe.objects.all().select_related('author').prefetch_related(
+        queryset = Recipe.objects.all()
+        user = self.request.user
+        is_favorited = self.request.query_params.get('is_favorited')
+        if is_favorited and user.is_authenticated:
+            if is_favorited == '1':
+                queryset = queryset.filter(favorites__user=user)
+            elif is_favorited == '0':
+                queryset = queryset.exclude(favorites__user=user)
+        return queryset.select_related('author').prefetch_related(
             'tags', 'recipe_ingredients__ingredient'
         )
 
