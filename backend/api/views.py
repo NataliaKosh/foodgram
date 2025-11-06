@@ -94,9 +94,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         action_name = 'избранное' if model is Favorite else 'список покупок'
 
         if request.method == 'POST':
-            obj, created = model.objects.get_or_create(user=user, recipe=recipe)
+            obj, created = model.objects.get_or_create(
+                user=user,
+                recipe=recipe,
+            )
             if not created:
-                raise ValidationError(f'Рецепт "{recipe.name}" уже добавлен в {action_name}')
+                raise ValidationError(
+                    f'Рецепт "{recipe.name}" уже добавлен в {action_name}'
+                )
 
             serializer = RecipeMinifiedSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
