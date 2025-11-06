@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
@@ -24,7 +24,7 @@ from .serializers import (
 )
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
-from .filters import RecipeFilter
+# from .filters import RecipeFilter
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -46,26 +46,17 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
     pagination_class = StandardPagination
     permission_classes = [IsAuthorOrReadOnly]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_class = RecipeFilter
-    ordering_fields = ['created']
-    ordering = ['-created']
+    # filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    # filterset_class = RecipeFilter
+    # ordering_fields = ['created']
+    # ordering = ['-created']
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
         user = self.request.user
-        is_favorited = self.request.query_params.get('is_favorited')
-        if is_favorited and user.is_authenticated:
-            if is_favorited == '1':
-                queryset = queryset.filter(favorites__user=user)
-            elif is_favorited == '0':
-                queryset = queryset.exclude(favorites__user=user)
-        return queryset.select_related('author').prefetch_related(
-            'tags', 'recipe_ingredients__ingredient'
-        )
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
