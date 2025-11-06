@@ -137,8 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         content = generate_shopping_list_text(
             ingredients=ingredients,
-            recipes=recipes,
-            user=user
+            recipes=recipes
         )
 
         return FileResponse(
