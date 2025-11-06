@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from recipes.models import (
     Tag,
@@ -86,34 +87,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self._add_remove_relation(request, pk, ShoppingCart)
 
     def _add_remove_relation(self, request, pk, model):
-        """Метод для добавления и удаления связей"""
+        """Добавление или удаление рецепта из избранного / корзины."""
         user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
         action_name = 'избранное' if model is Favorite else 'список покупок'
 
         if request.method == 'POST':
-            recipe = get_object_or_404(Recipe, pk=pk)
-            if model.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {
-                        'errors': (
-                            f'Рецепт "{recipe.name}" уже добавлен '
-                            f'в {action_name}'
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            model.objects.create(user=user, recipe=recipe)
+            obj, created = model.objects.get_or_create(user=user, recipe=recipe)
+            if not created:
+                raise ValidationError(f'Рецепт "{recipe.name}" уже добавлен в {action_name}')
+
             serializer = RecipeMinifiedSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        deleted, _ = model.objects.filter(user=user, recipe_id=pk).delete()
-        if deleted:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        deleted, _ = model.objects.filter(user=user, recipe=recipe).delete()
+        if not deleted:
+            raise ValidationError('Рецепт не был добавлен')
 
-        return Response(
-            {'errors': 'Рецепт не был добавлен'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -133,8 +125,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
 
-        text_content = "Foodgram  Список покупок\n"
-        text_content += "=" * 30 + "\n\n"
+        text_content = 'Foodgram  Список покупок\n'
+        text_content += '=' * 30 + '\n\n'
 
         for ingredient in ingredients:
             text_content += (
@@ -143,8 +135,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f"{ingredient['ingredient__measurement_unit']}\n"
             )
 
-        text_content += f"\nВсего ингредиентов: {len(ingredients)}"
-        text_content += "\n\nПриятного аппетита!"
+        text_content += f'\nВсего ингредиентов: {len(ingredients)}'
+        text_content += '\n\nПриятного аппетита!'
 
         response = HttpResponse(
             text_content, content_type='text/plain; charset=utf-8'
