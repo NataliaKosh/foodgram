@@ -50,7 +50,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = StandardPagination
     permission_classes = [IsAuthorOrReadOnly]
     filter_backends = (DjangoFilterBackend,)  # filters.OrderingFilter]
-    filterset_fields = ('is_favorited', 'is_in_shopping_cart', 'tags', 'author', '-created')
+    filterset_fields = (
+        'is_favorited',
+        'is_in_shopping_cart',
+        'tags',
+        'author',
+        '-created'
+    )
     # filterset_class = RecipeFilter
     # ordering_fields = ['created']
     # ordering = ['-created']
