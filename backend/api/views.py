@@ -55,7 +55,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     ordering = ['-created']
 
     def get_queryset(self):
-        return Recipe.objects.all()
+        return Recipe.objects.all().select_related('author').prefetch_related(
+            'tags', 'recipe_ingredients__ingredient'
+    )
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
