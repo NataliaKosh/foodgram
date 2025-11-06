@@ -137,13 +137,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         content = generate_shopping_list_text(
             ingredients=ingredients,
-            recipes=recipes
+            recipes=recipes,
         )
 
         return FileResponse(
-            content.encode('utf-8'),
+            content,
             as_attachment=True,
-            filename='shopping_list.txt'
+            filename='shopping_list.txt',
+            content_type='text/plain',
         )
 
     @action(
