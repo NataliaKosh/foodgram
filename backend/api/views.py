@@ -24,7 +24,7 @@ from .serializers import (
 )
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
-# from .filters import RecipeFilter
+from .filters import RecipeFilter
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -49,17 +49,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     pagination_class = StandardPagination
     permission_classes = [IsAuthorOrReadOnly]
-    filter_backends = (DjangoFilterBackend,)  # filters.OrderingFilter]
-    filterset_fields = (
-        'is_favorited',
-        'is_in_shopping_cart',
-        'tags',
-        'author',
-        '-created'
-    )
-    # filterset_class = RecipeFilter
-    # ordering_fields = ['created']
-    # ordering = ['-created']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
