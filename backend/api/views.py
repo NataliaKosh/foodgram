@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
+from api.services.shopping_list import generate_shopping_list_text
 from recipes.models import (
     Tag,
     Ingredient,
@@ -130,26 +131,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
 
-        text_content = 'Foodgram  Список покупок\n'
-        text_content += '=' * 30 + '\n\n'
+        recipes = Recipe.objects.filter(
+            shopping_cart__user=user
+        ).select_related('author')
 
-        for ingredient in ingredients:
-            text_content += (
-                f"• {ingredient['ingredient__name']} - "
-                f"{ingredient['total_amount']} "
-                f"{ingredient['ingredient__measurement_unit']}\n"
-            )
-
-        text_content += f'\nВсего ингредиентов: {len(ingredients)}'
-        text_content += '\n\nПриятного аппетита!'
-
-        response = HttpResponse(
-            text_content, content_type='text/plain; charset=utf-8'
+        content = generate_shopping_list_text(
+            ingredients=ingredients,
+            recipes=recipes,
+            user=user
         )
-        response['Content-Disposition'] = (
-            'attachment; filename="shopping_list.txt"'
+
+        return FileResponse(
+            content.encode('utf-8'),
+            as_attachment=True,
+            filename='shopping_list.txt'
         )
-        return response
 
     @action(
         detail=True,
