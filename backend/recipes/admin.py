@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin import RelatedOnlyFieldListFilter
+from django.utils.safestring import mark_safe
+from django.db.models import Count
+
 from users.models import User, Subscription
 from .models import (
     Tag,
@@ -13,14 +16,67 @@ from .models import (
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin):
+class CustomUserAdmin(UserAdmin):
     list_display = (
-        'email', 'username', 'first_name', 'last_name', 'is_staff'
+        "id",
+        "username",
+        "full_name",
+        "email",
+        "avatar_preview",
+        "recipes_count",
+        "subscriptions_count",
+        "followers_count",
+        "is_staff",
     )
-    search_fields = ('email', 'username')
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
-    fieldsets = UserAdmin.fieldsets
-    add_fieldsets = UserAdmin.add_fieldsets
+    list_filter = (
+        "is_staff",
+        "is_active",
+        ("recipes", admin.EmptyFieldListFilter),
+        ("subscriptions", admin.EmptyFieldListFilter),
+        ("followers", admin.EmptyFieldListFilter),
+    )
+    search_fields = ("username", "email")
+    ordering = ("id",)
+
+    def get_queryset(self, request):
+        """Оптимизируем запрос — добавляем аннотации для подсчётов"""
+        queryset = (
+            super()
+            .get_queryset(request)
+            .annotate(
+                _recipes_count=Count("recipes", distinct=True),
+                _subscriptions_count=Count("subscriptions", distinct=True),
+                _followers_count=Count("followers", distinct=True),
+            )
+        )
+        return queryset
+
+    @staticmethod
+    @mark_safe
+    def avatar_preview(obj):
+        """Превью аватара в списке пользователей"""
+        if obj.avatar:
+            return (
+                f'<img src="{obj.avatar.url}" width="50" height="50" '
+                'style="border-radius: 50%;">'
+            )
+        return "—"
+
+    def full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+    full_name.short_description = "ФИО"
+
+    def recipes_count(self, obj):
+        return obj._recipes_count
+    recipes_count.short_description = "Рецептов"
+
+    def subscriptions_count(self, obj):
+        return obj._subscriptions_count
+    subscriptions_count.short_description = "Подписок"
+
+    def followers_count(self, obj):
+        return obj._followers_count
+    followers_count.short_description = "Подписчиков"
 
 
 @admin.register(Subscription)
