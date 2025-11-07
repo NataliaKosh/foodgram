@@ -143,16 +143,17 @@ class RecipeIngredient(models.Model):
 
 
 class UserRecipeRelation(models.Model):
-    """Абстрактная модель связи User — Recipe"""
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set'
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='%(class)s_set'
     )
 
     class Meta:
@@ -164,13 +165,8 @@ class UserRecipeRelation(models.Model):
             )
         ]
 
-    def __str__(self):
-        return f'{self.user} — {self.recipe}'
-
 
 class Favorite(UserRecipeRelation):
-    """Модель избранных рецептов"""
-
     class Meta(UserRecipeRelation.Meta):
         db_table = 'recipes_favorite'
         verbose_name = 'Избранное'
@@ -178,8 +174,6 @@ class Favorite(UserRecipeRelation):
 
 
 class ShoppingCart(UserRecipeRelation):
-    """Модель списка покупок"""
-
     class Meta(UserRecipeRelation.Meta):
         db_table = 'recipes_shoppingcart'
         verbose_name = 'Список покупок'
