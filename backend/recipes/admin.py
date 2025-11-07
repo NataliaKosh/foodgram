@@ -108,17 +108,26 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit', 'recipes_count')
-    search_fields = ('name', 'measurement_unit')
-    list_filter = ('measurement_unit',)
+    search_fields = ('name', 'measurement_unit', 'slug')  # поиск по имени и единице измерения
+    list_filter = ('measurement_unit', 'used_in_recipes')  # добавляем фильтр по единице и использованию в рецептах
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.annotate(_recipes_count=Count('recipes', distinct=True))
+        # аннотация количества рецептов
+        qs = qs.annotate(_recipes_count=Count('recipes', distinct=True))
+        # аннотация для фильтра "есть в рецептах"
+        qs = qs.annotate(used_in_recipes=Count('recipes'))
+        return qs
 
     def recipes_count(self, obj):
         return getattr(obj, '_recipes_count', obj.recipes.count())
     recipes_count.short_description = 'Рецептов'
     recipes_count.admin_order_field = '_recipes_count'
+
+    def used_in_recipes(self, obj):
+        return getattr(obj, 'used_in_recipes', 0) > 0
+    used_in_recipes.boolean = True
+    used_in_recipes.short_description = 'Есть в рецептах'
 
 
 class RecipeIngredientInline(admin.TabularInline):
