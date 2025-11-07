@@ -90,15 +90,35 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
-    search_fields = ('name',)
+    list_display = ('name', 'slug', 'recipes_count')
+    search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # аннотация количества связанных рецептов
+        return qs.annotate(_recipes_count=Count('recipes', distinct=True))
+
+    def recipes_count(self, obj):
+        return getattr(obj, '_recipes_count', obj.recipes.count())
+    recipes_count.short_description = 'Рецептов'
+    recipes_count.admin_order_field = '_recipes_count'
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit')
-    search_fields = ('name',)
+    list_display = ('name', 'measurement_unit', 'recipes_count')
+    search_fields = ('name', 'measurement_unit')
+    list_filter = ('measurement_unit',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(_recipes_count=Count('recipes', distinct=True))
+
+    def recipes_count(self, obj):
+        return getattr(obj, '_recipes_count', obj.recipes.count())
+    recipes_count.short_description = 'Рецептов'
+    recipes_count.admin_order_field = '_recipes_count'
 
 
 class RecipeIngredientInline(admin.TabularInline):
