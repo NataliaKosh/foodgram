@@ -228,21 +228,21 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe', 'get_user_email')
-    list_filter = ('user', 'recipe')
-    search_fields = ('user__email', 'user__username', 'recipe__name')
+    list_display = ("user", "recipe", "user_email")
+    list_filter = ("user", "recipe")
+    search_fields = ("user__email", "user__username", "recipe__name")
 
-    def get_user_email(self, obj):
-        return obj.user.email
-    get_user_email.short_description = 'Email пользователя'
+    @admin.display(description="Email пользователя")
+    def user_email(self, favorite):
+        return favorite.user.email
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe', 'get_user_email')
-    list_filter = ('user', 'recipe')
-    search_fields = ('user__email', 'user__username', 'recipe__name')
+    list_display = ("user", "recipe", "user_email")
+    list_filter = ("user", "recipe")
+    search_fields = ("user__email", "user__username", "recipe__name")
 
-    def get_user_email(self, obj):
-        return obj.user.email
-    get_user_email.short_description = 'Email пользователя'
+    @admin.display(description="Email пользователя")
+    def user_email(self, cart):
+        return cart.user.email
