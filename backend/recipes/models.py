@@ -172,7 +172,7 @@ class Favorite(UserRecipeRelation):
     """Модель избранных рецептов"""
 
     class Meta(UserRecipeRelation.Meta):
-        db_table = 'favorite'
+        db_table = 'recipes_favorite'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
 
@@ -181,6 +181,6 @@ class ShoppingCart(UserRecipeRelation):
     """Модель списка покупок"""
 
     class Meta(UserRecipeRelation.Meta):
-        db_table = 'shopping_cart'
+        db_table = 'recipes_shoppingcart'
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
