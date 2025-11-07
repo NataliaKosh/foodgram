@@ -4,6 +4,7 @@ from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.utils.safestring import mark_safe
 from django.db.models import Count
 
+from .admin_filters import UsedInRecipesFilter, TagUsedInRecipesFilter
 from users.models import User, Subscription
 from .models import (
     Tag,
@@ -90,42 +91,35 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'recipes_count')
-    search_fields = ('name', 'slug')
-    prepopulated_fields = {'slug': ('name',)}
+    list_display = ("name", "slug", "recipes_count")
+    search_fields = ("name", "slug")
+    list_filter = (TagUsedInRecipesFilter,)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # аннотация количества связанных рецептов
-        return qs.annotate(_recipes_count=Count('recipes', distinct=True))
+        return qs.annotate(recipe_count=Count("recipes", distinct=True))
 
     def recipes_count(self, obj):
-        return getattr(obj, '_recipes_count', obj.recipes.count())
-    recipes_count.short_description = 'Рецептов'
-    recipes_count.admin_order_field = '_recipes_count'
+        return obj.recipe_count
+    recipes_count.short_description = "Рецептов"
+    recipes_count.admin_order_field = "recipe_count"
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit', 'recipes_count')
-    search_fields = ('name', 'measurement_unit', 'slug')
-    list_filter = ('measurement_unit', 'used_in_recipes')
+    list_display = ("name", "measurement_unit", "recipes_count")
+    search_fields = ("name", "measurement_unit", "slug")
+    list_filter = ("measurement_unit", UsedInRecipesFilter)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.annotate(_recipes_count=Count('recipes', distinct=True))
-        qs = qs.annotate(used_in_recipes=Count('recipes'))
-        return qs
+        return qs.annotate(_recipes_count=Count("recipes", distinct=True))
 
     def recipes_count(self, obj):
-        return getattr(obj, '_recipes_count', obj.recipes.count())
-    recipes_count.short_description = 'Рецептов'
-    recipes_count.admin_order_field = '_recipes_count'
+        return getattr(obj, "_recipes_count", obj.recipes.count())
 
-    def used_in_recipes(self, obj):
-        return getattr(obj, 'used_in_recipes', 0) > 0
-    used_in_recipes.boolean = True
-    used_in_recipes.short_description = 'Есть в рецептах'
+    recipes_count.short_description = "Рецептов"
+    recipes_count.admin_order_field = "_recipes_count"
 
 
 class RecipeIngredientInline(admin.TabularInline):
