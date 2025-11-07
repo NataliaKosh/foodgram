@@ -4,7 +4,11 @@ from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.utils.safestring import mark_safe
 from django.db.models import Count
 
-from .admin_filters import UsedInRecipesFilter, TagUsedInRecipesFilter
+from .admin_filters import (
+    UsedInRecipesFilter, 
+    TagUsedInRecipesFilter, 
+    CookingTimeFilter
+)
 from users.models import User, Subscription
 from .models import (
     Tag,
@@ -131,55 +135,87 @@ class RecipeIngredientInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'author', 'get_favorites_count',
-        'get_in_shopping_carts_count', 'cooking_time', 'created'
+        "id",
+        "name",
+        "author",
+        "cooking_time",
+        "favorites_count",
+        "show_ingredients",
+        "show_tags",
+        "show_image",
+        "created",
     )
+
     list_filter = (
-        ('tags', RelatedOnlyFieldListFilter),
-        'author',
-        'created'
+        ("tags", RelatedOnlyFieldListFilter),
+        ("author", RelatedOnlyFieldListFilter),
+        CookingTimeFilter,
+        "created",
     )
-    search_fields = ('name', 'author__username', 'author__email')
+
+    search_fields = (
+        "name",
+        "author__username",
+        "author__email",
+        "tags__name",
+        "ingredients__name",
+    )
+
     inlines = (RecipeIngredientInline,)
 
-    def get_favorites_count(self, obj):
-        return obj.favorites.count()
-    get_favorites_count.short_description = 'В избранном'
+    @admin.display(description="Продукты")
+    @mark_safe
+    def show_ingredients(self, recipe):
+        ingredients = recipe.ingredients.values_list("name", flat=True)
+        return "<br>".join(ingredients)
 
-    def get_in_shopping_carts_count(self, obj):
-        return obj.shopping_cart.count()
-    get_in_shopping_carts_count.short_description = 'В корзинах'
+    @admin.display(description="Теги")
+    @mark_safe
+    def show_tags(self, recipe):
+        tags = recipe.tags.values_list("name", flat=True)
+        return ", ".join(tags)
+
+    @admin.display(description="Картинка")
+    @mark_safe
+    def show_image(self, recipe):
+        if recipe.image:
+            return (
+                f'<img src="{recipe.image.url}" width="60" '
+                f'height="60" style="border-radius:6px;">'
+            )
+        return "—"
+
+    @admin.display(description="В избранном")
+    def favorites_count(self, recipe):
+        return recipe.favorites.count()
+
+    @admin.display(description="Добавлений в избранное")
+    def favorites_count_display(self, recipe):
+        return f"{self.favorites_count(recipe)} раз(а)"
+
+    @admin.display(description="Добавлений в корзины покупок")
+    def in_shopping_carts_count_display(self, recipe):
+        return f"{recipe.shopping_cart.count()} раз(а)"
 
     fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'author', 'image', 'text', 'cooking_time')
+        ("Основная информация", {
+            "fields": ("name", "author", "image", "text", "cooking_time"),
         }),
-        ('Теги', {
-            'fields': ('tags',)
+        ("Теги", {
+            "fields": ("tags",),
         }),
-        ('Статистика', {
-            'fields': (
-                'get_favorites_count_display',
-                'get_in_shopping_carts_count_display'
+        ("Статистика", {
+            "fields": (
+                "favorites_count_display",
+                "in_shopping_carts_count_display",
             ),
-            'classes': ('collapse',)
+            "classes": ("collapse",),
         }),
-    )
-
-    def get_favorites_count_display(self, obj):
-        return f'{self.get_favorites_count(obj)} раз(а)'
-    get_favorites_count_display.short_description = (
-        'Число добавлений в избранное'
-    )
-
-    def get_in_shopping_carts_count_display(self, obj):
-        return f'{self.get_in_shopping_carts_count(obj)} раз(а)'
-    get_in_shopping_carts_count_display.short_description = (
-        'Число добавлений в корзины покупок'
     )
 
     readonly_fields = (
-        'get_favorites_count_display', 'get_in_shopping_carts_count_display'
+        "favorites_count_display",
+        "in_shopping_carts_count_display",
     )
 
 
