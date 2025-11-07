@@ -5,8 +5,8 @@ from django.utils.safestring import mark_safe
 from django.db.models import Count
 
 from .admin_filters import (
-    UsedInRecipesFilter, 
-    TagUsedInRecipesFilter, 
+    UsedInRecipesFilter,
+    TagUsedInRecipesFilter,
     CookingTimeFilter
 )
 from users.models import User, Subscription

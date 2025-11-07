@@ -43,7 +43,7 @@ class TagUsedInRecipesFilter(admin.SimpleListFilter):
 
 
 class CookingTimeFilter(admin.SimpleListFilter):
-    """Фильтр рецептов по времени готовки (динамические пороги на основе данных)"""
+    """Фильтр рецептов по времени готовки"""
     title = "Время готовки"
     parameter_name = "cooking_time_group"
 
@@ -57,10 +57,17 @@ class CookingTimeFilter(admin.SimpleListFilter):
         fast_limit = qs[count // 3].cooking_time
         medium_limit = qs[2 * count // 3].cooking_time
 
+        fast_count = qs.filter(cooking_time__lt=fast_limit).count()
+        medium_count = qs.filter(
+            cooking_time__gte=fast_limit,
+            cooking_time__lt=medium_limit,
+        ).count()
+        long_count = qs.filter(cooking_time__gte=medium_limit).count()
+
         return (
-            ("fast", f"быстрее {fast_limit} мин ({qs.filter(cooking_time__lt=fast_limit).count()})"),
-            ("medium", f"до {medium_limit} мин ({qs.filter(cooking_time__gte=fast_limit, cooking_time__lt=medium_limit).count()})"),
-            ("long", f"долго ({qs.filter(cooking_time__gte=medium_limit).count()})"),
+            ("fast", f"быстрее {fast_limit} мин ({fast_count})"),
+            ("medium", f"до {medium_limit} мин ({medium_count})"),
+            ("long", f"долго ({long_count})"),
         )
 
     def queryset(self, request, queryset):
@@ -77,5 +84,8 @@ class CookingTimeFilter(admin.SimpleListFilter):
         if value == "fast":
             return queryset.filter(cooking_time__lt=fast_limit)
         elif value == "medium":
-            return queryset.filter(cooking_time__gte=fast_limit, cooking_time__lt=medium_limit)
+            return queryset.filter(
+                cooking_time__gte=fast_limit,
+                cooking_time__lt=medium_limit,
+            )
         return queryset.filter(cooking_time__gte=medium_limit)
