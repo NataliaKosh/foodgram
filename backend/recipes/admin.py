@@ -108,14 +108,12 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit', 'recipes_count')
-    search_fields = ('name', 'measurement_unit', 'slug')  # поиск по имени и единице измерения
-    list_filter = ('measurement_unit', 'used_in_recipes')  # добавляем фильтр по единице и использованию в рецептах
+    search_fields = ('name', 'measurement_unit', 'slug')
+    list_filter = ('measurement_unit', 'used_in_recipes')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # аннотация количества рецептов
         qs = qs.annotate(_recipes_count=Count('recipes', distinct=True))
-        # аннотация для фильтра "есть в рецептах"
         qs = qs.annotate(used_in_recipes=Count('recipes'))
         return qs
 
