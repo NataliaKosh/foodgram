@@ -17,9 +17,9 @@ class RecipeFilter(django_filters.FilterSet):
         if not user.is_authenticated:
             return queryset.none() if value else queryset
         qs = (
-            queryset.filter(favorites__user=user)
+            queryset.filter(favorite_set__user=user)
             if value
-            else queryset.exclude(favorites__user=user)
+            else queryset.exclude(favorite_set__user=user)
         )
         return qs.distinct()
 
@@ -28,9 +28,9 @@ class RecipeFilter(django_filters.FilterSet):
         if not user.is_authenticated:
             return queryset.none() if value else queryset
         qs = (
-            queryset.filter(shopping_cart__user=user)
+            queryset.filter(shoppingcart_set__user=user)
             if value
-            else queryset.exclude(shopping_cart__user=user)
+            else queryset.exclude(shoppingcart_set__user=user)
         )
         return qs.distinct()
 
