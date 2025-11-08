@@ -163,12 +163,25 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def set_password_legacy(self, request):
-        """Старый endpoint для фронта, использует Джосер"""
-        serializer = SetPasswordSerializer(
-            data=request.data,
-            instance=request.user,
-            context={'request': request}
-        )
+        """Старый endpoint для фронта, вручную меняет пароль."""
+        class PasswordChangeSerializer(serializers.Serializer):
+            current_password = serializers.CharField(required=True)
+            new_password = serializers.CharField(
+                required=True, 
+                validators=[validate_password]
+            )
+
+            def validate_current_password(self, value):
+                if not request.user.check_password(value):
+                    raise serializers.ValidationError(
+                        "Текущий пароль неверен"
+                    )
+                return value
+
+        serializer = PasswordChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        request.user.set_password(
+            serializer.validated_data['new_password']
+        )
+        request.user.save()
+        return Response(status=204)
