@@ -14,33 +14,21 @@ class UserSerializer(DjoserUserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
 
-    class Meta:
-        model = User
-        fields = [
-            'id', 'email', 'username', 'first_name',
-            'last_name', 'is_subscribed', 'avatar'
-        ]
-        read_only_fields = ['id', 'is_subscribed']
+    class Meta(DjoserUserSerializer.Meta):
+        fields = DjoserUserSerializer.Meta.fields
+        read_only_fields = (
+            DjoserUserSerializer.Meta.fields + ['is_subscribed']
+        )
 
-    def get_is_subscribed(self, obj):
+    def get_is_subscribed(self, author):
         """Проверят подписан ли ползьватель на данного автора."""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Subscription.objects.filter(
                 user=request.user,
-                author=obj
+                author=author
             ).exists()
         return False
-
-    def get_avatar(self, obj):
-        """Возвращает URL аватара."""
-        if obj.avatar:
-            request = self.context.get('request')
-            return (
-                request.build_absolute_uri(obj.avatar.url)
-                if request else obj.avatar.url
-            )
-        return None
 
 
 class SetAvatarSerializer(serializers.ModelSerializer):
@@ -51,44 +39,19 @@ class SetAvatarSerializer(serializers.ModelSerializer):
         model = User
         fields = ['avatar']
 
-    def validate_avatar(self, value):
+    def validate_avatar(self, avatar):
         """Проверяет размер загружаемого аватара."""
-        if value and hasattr(value, 'size') and value.size > 2 * 1024 * 1024:
+        if avatar and hasattr(avatar, 'size') and avatar.size > 2 * 1024 * 1024:
             raise serializers.ValidationError(
-                "Размер файла не должен превышать 2MB"
+                'Размер файла не должен превышать 2MB'
             )
-        return value
+        return avatar
 
     def update(self, instance, validated_data):
         """Сохраняет новый аватар."""
         instance.avatar = validated_data['avatar']
         instance.save()
         return instance
-
-
-class CustomUserCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания пользователя."""
-    password = serializers.CharField(
-        write_only=True,
-        required=True,
-        validators=[validate_password]
-    )
-
-    class Meta:
-        model = User
-        fields = [
-            'id', 'email', 'username', 'first_name',
-            'last_name', 'password'
-        ]
-        read_only_fields = ['id']
-
-    def create(self, validated_data):
-        """Создаёт пользователя с захешированным паролем."""
-        password = validated_data.pop('password')
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
 
 
 class UserWithRecipesSerializer(UserSerializer):

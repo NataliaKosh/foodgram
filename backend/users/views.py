@@ -4,10 +4,11 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from djoser.serializers import UserCreateSerializer
+
 from api.pagination import StandardPagination
 from .models import Subscription, User
 from .serializers import (
-    CustomUserCreateSerializer,
     SetAvatarSerializer,
     SetPasswordSerializer,
     SubscriptionSerializer,
@@ -28,7 +29,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Вызов сериализатора создания пользователя или подписок
         """
         if self.action == 'create':
-            return CustomUserCreateSerializer
+            return UserCreateSerializer
         elif self.action == 'subscriptions':
             return SubscriptionSerializer
         return UserSerializer
