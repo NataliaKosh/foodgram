@@ -95,14 +95,12 @@ class UserViewSet(DjoserUserViewSet):
                 )
 
             serializer = SubscriptionListSerializer(
-                subscription,
+                author,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        deleted, _ = Subscription.objects.filter(
-            user=user, author=author
-        ).delete()
+        deleted, _ = Subscription.objects.filter(user=user, author=author).delete()
         if not deleted:
             return Response(
                 {'detail': 'Вы не подписаны на этого пользователя'},
