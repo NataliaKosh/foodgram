@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import permissions, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from djoser.views import UserViewSet as DjoserUserViewSet
 
