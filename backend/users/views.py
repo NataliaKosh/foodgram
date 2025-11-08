@@ -11,7 +11,7 @@ from .models import Subscription, User
 from .serializers import (
     SetAvatarSerializer,
     SetPasswordSerializer,
-    SubscriptionSerializer,
+    SubscriptionListSerializer,
     UserSerializer,
 )
 
@@ -31,7 +31,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return UserCreateSerializer
         elif self.action == 'subscriptions':
-            return SubscriptionSerializer
+            return SubscriptionListSerializer
         return UserSerializer
 
     def get_permissions(self):
@@ -114,7 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
             subscription = Subscription.objects.create(
                 user=user, author=author
             )
-            serializer = SubscriptionSerializer(
+            serializer = SubscriptionListSerializer(
                 subscription,
                 context={'request': request}
             )
@@ -144,10 +144,11 @@ class UserViewSet(viewsets.ModelViewSet):
         """Подписки с пагинацией"""
         user = request.user
         subscriptions = Subscription.objects.filter(user=user)
+        authors = [sub.author for sub in subscriptions]
         paginator = self.pagination_class()
-        page = paginator.paginate_queryset(subscriptions, request)
-        serializer = SubscriptionSerializer(
-            page if page is not None else subscriptions,
+        page = paginator.paginate_queryset(authors, request)
+        serializer = SubscriptionListSerializer(
+            page if page is not None else authors,
             many=True,
             context={'request': request}
         )

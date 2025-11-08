@@ -99,66 +99,9 @@ class UserWithRecipesSerializer(UserSerializer):
         ).data
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    """Сериализатор информации о подписке на пользователя."""
-    email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
+class SubscriptionListSerializer(UserWithRecipesSerializer):
+    """Сериализатор для пользователей, на которых подписан текущий пользователь."""
     is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Subscription
-        fields = [
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count', 'avatar'
-        ]
-
-    def get_is_subscribed(self, obj):
-        """Возвращает True, если есть подписка."""
-        return True
-
-    def get_avatar(self, obj):
-        """Возвращает URL аватара автора подписки, если есть подписка."""
-        if obj.author.avatar:
-            request = self.context.get('request')
-            return (
-                request.build_absolute_uri(obj.author.avatar.url)
-                if request else obj.author.avatar.url
-            )
-        return None
-
-    def get_recipes(self, obj):
-        """Возвращает список рецептов автора подписки."""
-        request = self.context.get('request')
-        recipes = obj.author.recipes.all()
-
-        recipes_limit = (
-            request.query_params.get('recipes_limit') if request else None
-        )
-        if recipes_limit and recipes_limit.isdigit():
-            recipes = recipes[:int(recipes_limit)]
-
-        return [
-            {
-                "id": recipe.id,
-                "name": recipe.name,
-                "image": (
-                    request.build_absolute_uri(recipe.image.url)
-                    if request else recipe.image.url
-                ),
-                "cooking_time": recipe.cooking_time
-            }
-            for recipe in recipes
-        ]
-
-    def get_recipes_count(self, obj):
-        """Возвращает количество рецептов автора подписки."""
-        return obj.author.recipes.count()
 
 
 class SetPasswordSerializer(serializers.Serializer):
