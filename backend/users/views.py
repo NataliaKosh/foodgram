@@ -124,9 +124,7 @@ class UserViewSet(DjoserUserViewSet):
             many=True,
             context={'request': request}
         )
-        if page is not None:
-            return paginator.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     @action(
         detail=False,
