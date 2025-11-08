@@ -39,27 +39,34 @@ class UserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False,
-        methods=['put', 'patch'],
+        methods=['patch', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
         url_path='me/avatar'
     )
     def me_avatar(self, request):
         """
-        Обновление аватара текущего пользователя
+        Управление аватаром
         """
         user = request.user
-        serializer = SetAvatarSerializer(
-            user,
-            data=request.data,
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        avatar_url = (
-            request.build_absolute_uri(user.avatar.url)
-            if user.avatar else None
-        )
-        return Response({'avatar': avatar_url}, status=status.HTTP_200_OK)
+
+        if request.method == 'PATCH':
+            serializer = SetAvatarSerializer(
+                user, data=request.data, context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            avatar_url = (
+                request.build_absolute_uri(user.avatar.url)
+                if user.avatar else None
+            )
+            return Response({'avatar': avatar_url}, status=status.HTTP_200_OK)
+
+        elif request.method == 'DELETE':
+            if user.avatar:
+                user.avatar.delete()
+                user.avatar = None
+                user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
