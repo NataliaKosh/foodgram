@@ -17,7 +17,7 @@ class UserSerializer(DjoserUserSerializer):
     class Meta(DjoserUserSerializer.Meta):
         fields = DjoserUserSerializer.Meta.fields
         read_only_fields = (
-            DjoserUserSerializer.Meta.fields + ['is_subscribed']
+            DjoserUserSerializer.Meta.fields + ('is_subscribed',)
         )
 
     def get_is_subscribed(self, author):
