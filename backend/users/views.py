@@ -65,13 +65,11 @@ class UserViewSet(DjoserUserViewSet):
         detail=True,
         methods=['post', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
-        url_path='subscribe',
-        url_name='subscribe'
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, id=None):
         """Подписка и отписка на пользователя."""
         user = request.user
-        author = get_object_or_404(User, pk=pk)
+        author = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
             if author == user:
