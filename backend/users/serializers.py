@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import serializers
 from djoser.serializers import UserSerializer as DjoserUserSerializer
@@ -102,25 +101,3 @@ class UserWithRecipesSerializer(UserSerializer):
 class SubscriptionListSerializer(UserWithRecipesSerializer):
     """Сериализатор для подписок текущего пользователя."""
     is_subscribed = serializers.SerializerMethodField()
-
-
-class SetPasswordSerializer(serializers.Serializer):
-    """Сериализатор для изменения пароля пользователя"""
-    new_password = serializers.CharField(
-        required=True, validators=[validate_password]
-    )
-    current_password = serializers.CharField(required=True)
-
-    def validate_current_password(self, value):
-        """Проверяет корректность текущего пароля."""
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError("Текущий пароль неверен")
-        return value
-
-    def save(self, **kwargs):
-        """Сохраняет новый пароль"""
-        user = self.context['request'].user
-        user.set_password(self.validated_data['new_password'])
-        user.save()
-        return user

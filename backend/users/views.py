@@ -10,7 +10,6 @@ from api.pagination import StandardPagination
 from .models import Subscription, User
 from .serializers import (
     SetAvatarSerializer,
-    SetPasswordSerializer,
     SubscriptionListSerializer,
     UserSerializer,
 )
@@ -155,17 +154,3 @@ class UserViewSet(viewsets.ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(serializer.data)
         return Response(serializer.data)
-
-    @action(
-        detail=False,
-        methods=['post'],
-        permission_classes=[permissions.IsAuthenticated]
-    )
-    def set_password(self, request):
-        """Смена пароля"""
-        serializer = SetPasswordSerializer(
-            data=request.data, context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
