@@ -165,6 +165,8 @@ jobs:
           
           docker compose up -d db
           sleep 10
+          cd backend
+          python manage.py makemigrations --dry-run --check
           docker compose run --rm backend python manage.py migrate --noinput
           
           docker compose up -d

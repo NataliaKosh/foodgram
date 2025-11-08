@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+
 from rest_framework import serializers
+from djoser.serializers import UserSerializer as DjoserUserSerializer
 
 from api.fields import Base64ImageField
 from users.models import Subscription
@@ -8,7 +10,7 @@ from users.models import Subscription
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DjoserUserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
