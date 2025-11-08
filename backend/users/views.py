@@ -166,6 +166,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """Старый endpoint для фронта, использует Джосер"""
         serializer = SetPasswordSerializer(
             data=request.data,
+            instance=request.user,
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
