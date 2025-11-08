@@ -39,7 +39,7 @@ class UserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False,
-        methods=['patch', 'delete'],
+        methods=['put', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
         url_path='me/avatar'
     )
@@ -49,7 +49,7 @@ class UserViewSet(DjoserUserViewSet):
         """
         user = request.user
 
-        if request.method == 'PATCH':
+        if request.method == 'PUT':
             serializer = SetAvatarSerializer(
                 user, data=request.data, context={'request': request}
             )
@@ -59,14 +59,14 @@ class UserViewSet(DjoserUserViewSet):
                 request.build_absolute_uri(user.avatar.url)
                 if user.avatar else None
             )
-            return Response({'avatar': avatar_url}, status=status.HTTP_200_OK)
+            return Response({'avatar': avatar_url}, status=200)
 
         elif request.method == 'DELETE':
             if user.avatar:
                 user.avatar.delete()
                 user.avatar = None
                 user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=204)
 
     @action(
         detail=True,
