@@ -85,37 +85,30 @@ class UserViewSet(DjoserUserViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if Subscription.objects.filter(
+            subscription, created = Subscription.objects.get_or_create(
                 user=user, author=author
-            ).exists():
+            )
+            if not created:
                 return Response(
                     {'detail': 'Вы уже подписаны на этого пользователя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            subscription = Subscription.objects.create(
-                user=user, author=author
-            )
             serializer = SubscriptionListSerializer(
                 subscription,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == 'DELETE':
-            subscription_exists = Subscription.objects.filter(
-                user=user,
-                author=author
-            ).exists()
-
-            if not subscription_exists:
-                return Response(
-                    {'detail': 'Вы не подписаны на этого пользователя'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            Subscription.objects.filter(user=user, author=author).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        deleted, _ = Subscription.objects.filter(
+            user=user, author=author
+        ).delete()
+        if not deleted:
+            return Response(
+                {'detail': 'Вы не подписаны на этого пользователя'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
