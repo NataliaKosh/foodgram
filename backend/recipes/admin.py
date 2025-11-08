@@ -9,7 +9,7 @@ from .admin_filters import (
     TagUsedInRecipesFilter,
     CookingTimeFilter
 )
-from users.models import User, Subscription
+from recipe.models import User, Subscription
 from .models import (
     Tag,
     Ingredient,
