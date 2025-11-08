@@ -85,11 +85,17 @@ class UserViewSet(DjoserUserViewSet):
                 user=user, author_id=pk
             )
             if not created:
-                raise ValidationError({'detail': 'Вы уже подписаны на этого пользователя'})
+                raise ValidationError(
+                    {'detail': 'Вы уже подписаны на этого пользователя'}
+                )
 
             author = subscription.author
-            serializer = SubscriptionListSerializer(author, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = SubscriptionListSerializer(
+                author, context={'request': request}
+            )
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED
+            )
 
         deleted, _ = Subscription.objects.filter(user=user, author_id=pk).delete()
         if not deleted:
