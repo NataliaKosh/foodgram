@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 
+from djoser.serializers import SetPasswordSerializer
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -154,3 +155,19 @@ class UserViewSet(viewsets.ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(serializer.data)
         return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='set_password',
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def set_password_legacy(self, request):
+        """Старый endpoint для фронта, использует Джосер"""
+        serializer = SetPasswordSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
