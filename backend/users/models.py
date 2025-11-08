@@ -1,7 +1,6 @@
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils import timezone
 
 
 USERNAME_VALIDATOR = RegexValidator(
@@ -63,11 +62,6 @@ class Subscription(models.Model):
         related_name='followers',
         on_delete=models.CASCADE
     )
-    created = models.DateTimeField(
-        verbose_name='Дата подписки',
-        # auto_now_add=True,
-        default=timezone.now
-    )
 
     class Meta:
         verbose_name = 'Подписка'
@@ -78,7 +72,7 @@ class Subscription(models.Model):
                 name='unique_subscription'
             )
         ]
-        ordering = ['-created']
+        ordering = ('-user',)
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
