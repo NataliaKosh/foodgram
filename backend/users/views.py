@@ -93,7 +93,9 @@ class UserViewSet(DjoserUserViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            subscription = Subscription.objects.create(user=user, author=author)
+            subscription = Subscription.objects.create(
+                user=user, author=author
+            )
             serializer = SubscriptionListSerializer(
                 subscription,
                 context={'request': request}
