@@ -100,7 +100,7 @@ class UserWithRecipesSerializer(UserSerializer):
 
 
 class SubscriptionListSerializer(UserWithRecipesSerializer):
-    """Сериализатор для пользователей, на которых подписан текущий пользователь."""
+    """Сериализатор для подписок текущего пользователя."""
     is_subscribed = serializers.SerializerMethodField()
 
 
