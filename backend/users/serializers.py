@@ -13,6 +13,7 @@ User = get_user_model()
 class UserSerializer(DjoserUserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
+    avatar = ImageField(source='avatar', read_only=True)
 
     class Meta(DjoserUserSerializer.Meta):
         fields = DjoserUserSerializer.Meta.fields + ('is_subscribed',)
@@ -107,7 +108,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(source='author.avatar', read_only=True)
+    avatar = serializers.SerializerMethodField() 
 
     class Meta:
         model = Subscription
@@ -121,7 +122,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return True
 
     def get_avatar(self, obj):
-        """Возвращает URL аватара автора подписки, если естьподписка."""
+        """Возвращает URL аватара автора подписки, если есть подписка."""
         if obj.author.avatar:
             request = self.context.get('request')
             return (
