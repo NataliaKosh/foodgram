@@ -73,39 +73,28 @@ class UserViewSet(DjoserUserViewSet):
         methods=['post', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
     )
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, pk=None):
         """Подписка и отписка на пользователя."""
         user = request.user
-        author = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
-            if author == user:
-                return Response(
-                    {'detail': 'Нельзя подписаться на себя'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            if pk == user.pk:
+                raise ValidationError({'detail': 'Нельзя подписаться на себя'})
 
             subscription, created = Subscription.objects.get_or_create(
-                user=user, author=author
+                user=user, author_id=pk
             )
             if not created:
-                return Response(
-                    {'detail': 'Вы уже подписаны на этого пользователя'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                raise ValidationError({'detail': 'Вы уже подписаны на этого пользователя'})
 
-            serializer = SubscriptionListSerializer(
-                author,
-                context={'request': request}
-            )
+            author = subscription.author
+            serializer = SubscriptionListSerializer(author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        deleted, _ = Subscription.objects.filter(user=user, author=author).delete()
+        deleted, _ = Subscription.objects.filter(user=user, author_id=pk).delete()
         if not deleted:
-            return Response(
-                {'detail': 'Вы не подписаны на этого пользователя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError({'detail': 'Вы не подписаны на этого пользователя'})
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
