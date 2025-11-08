@@ -64,7 +64,9 @@ class UserViewSet(DjoserUserViewSet):
     @action(
         detail=True,
         methods=['post', 'delete'],
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='subscribe',
+        url_name='subscribe'
     )
     def subscribe(self, request, pk=None):
         """Подписка и отписка на пользователя."""
