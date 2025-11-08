@@ -48,10 +48,17 @@ class UserViewSet(DjoserUserViewSet):
         Обновление аватара текущего пользователя
         """
         user = request.user
-        serializer = SetAvatarSerializer(user, data=request.data, context={'request': request})
+        serializer = SetAvatarSerializer(
+            user,
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        avatar_url = request.build_absolute_uri(user.avatar.url) if user.avatar else None
+        avatar_url = (
+            request.build_absolute_uri(user.avatar.url)
+            if user.avatar else None
+        )
         return Response({'avatar': avatar_url}, status=status.HTTP_200_OK)
 
     @action(
