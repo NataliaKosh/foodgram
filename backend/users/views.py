@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import permissions, status, viewsets, serializers
 from rest_framework.decorators import action
@@ -166,7 +167,7 @@ class UserViewSet(viewsets.ModelViewSet):
         class PasswordChangeSerializer(serializers.Serializer):
             current_password = serializers.CharField(required=True)
             new_password = serializers.CharField(
-                required=True, 
+                required=True,
                 validators=[validate_password]
             )
 
