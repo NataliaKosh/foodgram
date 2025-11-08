@@ -62,6 +62,21 @@ class UserViewSet(DjoserUserViewSet):
         return Response({'avatar': avatar_url}, status=status.HTTP_200_OK)
 
     @action(
+        detail=False,
+        methods=['delete'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me/avatar'
+    )
+    def delete_avatar(self, request):
+        """Удаление аватара текущего пользователя"""
+        user = request.user
+        if user.avatar:
+            user.avatar.delete()
+            user.avatar = None
+            user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
         detail=True,
         methods=['post', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
