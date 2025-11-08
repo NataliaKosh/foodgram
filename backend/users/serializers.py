@@ -6,6 +6,7 @@ from djoser.serializers import UserSerializer as DjoserUserSerializer
 
 from api.fields import Base64ImageField
 from users.models import Subscription
+from recipes.models import Recipe
 
 User = get_user_model()
 
@@ -58,44 +59,44 @@ class SetAvatarSerializer(serializers.ModelSerializer):
         return instance
 
 
+class RecipeShortSerializer(serializers.ModelSerializer):
+    """Короткий сериализатор для вывода рецептов в подписках."""
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
 class UserWithRecipesSerializer(UserSerializer):
     """Сериализатор пользователя с рецептами и количеством рецептов."""
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(
+        source='recipes.count',
+        read_only=True
+    )
 
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
-        read_only_fields = (
-            UserSerializer.Meta.read_only_fields + ('recipes', 'recipes_count')
+        read_only_fields = UserSerializer.Meta.read_only_fields + (
+            'recipes', 'recipes_count'
         )
 
-    def get_recipes(self, obj):
-        """Список рецептов."""
+    def get_recipes(self, user):
+        """Список рецептов пользователя."""
         request = self.context.get('request')
-        recipes = obj.recipes.all()
+        recipes_qs = user.recipes.all()
 
         recipes_limit = (
             request.query_params.get('recipes_limit') if request else None
         )
-        if recipes_limit and recipes_limit.isdigit():
-            recipes = recipes[:int(recipes_limit)]
+        try:
+            if recipes_limit is not None:
+                recipes_qs = recipes_qs[:int(recipes_limit)]
+        except (ValueError, TypeError):
+            pass
 
-        return [
-            {
-                "id": recipe.id,
-                "name": recipe.name,
-                "image": (
-                    request.build_absolute_uri(recipe.image.url)
-                    if request else recipe.image.url
-                ),
-                "cooking_time": recipe.cooking_time
-            }
-            for recipe in recipes
-        ]
-
-    def get_recipes_count(self, obj):
-        """Количество рецептов."""
-        return obj.recipes.count()
+        return RecipeShortSerializer(
+            recipes_qs, many=True, context={'request': request}
+        ).data
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
