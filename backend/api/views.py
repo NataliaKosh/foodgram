@@ -19,6 +19,8 @@ from recipes.models import (
     Favorite,
     ShoppingCart,
     RecipeIngredient,
+    Subscription,
+    User
 )
 from .serializers import (
     TagSerializer,
@@ -34,7 +36,6 @@ from .services.shopping_list import generate_shopping_list_text
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
 from .filters import RecipeFilter
-from recipes.models import Subscription, User
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

@@ -9,14 +9,16 @@ from .admin_filters import (
     TagUsedInRecipesFilter,
     CookingTimeFilter
 )
-from recipe.models import User, Subscription
+
 from .models import (
     Tag,
     Ingredient,
     Recipe,
     RecipeIngredient,
     Favorite,
-    ShoppingCart
+    ShoppingCart,
+    User,
+    Subscription
 )
 
 
