@@ -4,6 +4,12 @@ from django.db import models
 from django.utils import timezone
 
 
+USERNAME_VALIDATOR = RegexValidator(
+    regex=r'^[\w.@+-]+\Z',
+    message='Username может содержать только буквы, цифры и @/./+/-/_'
+)
+
+
 class User(AbstractUser):
     """Модель пользователя"""
     email = models.EmailField(
@@ -11,15 +17,11 @@ class User(AbstractUser):
         verbose_name='Адрес электронной почты',
         unique=True
     )
-    username_validator = RegexValidator(
-        regex=r'^[\w.@+-]+\Z',
-        message='Username может содержать только буквы, цифры и @/./+/-/_'
-    )
     username = models.CharField(
         max_length=150,
-        verbose_name='Уникальный юзернейм',
+        verbose_name='Юзернейм',
         unique=True,
-        validators=[username_validator]
+        validators=[USERNAME_VALIDATOR]
     )
     first_name = models.CharField(
         max_length=150,
@@ -28,10 +30,6 @@ class User(AbstractUser):
     last_name = models.CharField(
         max_length=150,
         verbose_name='Фамилия'
-    )
-    password = models.CharField(
-        max_length=150,
-        verbose_name='Пароль'
     )
     avatar = models.ImageField(
         verbose_name='Аватар',
@@ -43,7 +41,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
-        ordering = ['id']
+        ordering = ('email',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -56,13 +54,13 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name='Подписчик',
-        related_name='subscriber',
+        related_name='subscribers',
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
-        related_name='subscribed',
+        related_name='followers',
         on_delete=models.CASCADE
     )
     created = models.DateTimeField(

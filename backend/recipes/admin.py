@@ -37,8 +37,8 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         ("recipes", admin.EmptyFieldListFilter),
-        ("subscribed", admin.EmptyFieldListFilter),
-        ("subscriber", admin.EmptyFieldListFilter),
+        ("followers", admin.EmptyFieldListFilter),
+        ("subscribers", admin.EmptyFieldListFilter),
     )
     search_fields = ("username", "email")
     ordering = ("id",)
@@ -50,8 +50,8 @@ class CustomUserAdmin(UserAdmin):
             .get_queryset(request)
             .annotate(
                 _recipes_count=Count("recipes", distinct=True),
-                _subscriptions_count=Count("subscribed", distinct=True),
-                _followers_count=Count("subscriber", distinct=True),
+                _subscriptions_count=Count("subscribers", distinct=True),
+                _followers_count=Count("followers", distinct=True),
             )
         )
         return queryset
