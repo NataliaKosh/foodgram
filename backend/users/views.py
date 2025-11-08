@@ -97,9 +97,13 @@ class UserViewSet(DjoserUserViewSet):
                 serializer.data, status=status.HTTP_201_CREATED
             )
 
-        deleted, _ = Subscription.objects.filter(user=user, author_id=pk).delete()
+        deleted, _ = Subscription.objects.filter(
+            user=user, author_id=pk
+        ).delete()
         if not deleted:
-            raise ValidationError({'detail': 'Вы не подписаны на этого пользователя'})
+            raise ValidationError(
+                {'detail': 'Вы не подписаны на этого пользователя'}
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
