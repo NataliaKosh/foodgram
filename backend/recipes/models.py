@@ -218,7 +218,7 @@ class RecipeIngredient(models.Model):
 
 class UserRecipeRelation(models.Model):
     user = models.ForeignKey(
-        User,
+        recipes.User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
         related_name='%(class)s_set'
