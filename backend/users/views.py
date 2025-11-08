@@ -97,7 +97,7 @@ class UserViewSet(DjoserUserViewSet):
                 user=user, author=author
             )
             serializer = SubscriptionListSerializer(
-                subscription,
+                author,
                 context={'request': request}
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
