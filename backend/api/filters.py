@@ -6,7 +6,9 @@ class RecipeFilter(django_filters.FilterSet):
     """Фильтр рецептов по тегам, избранному, корзине и автору"""
 
     is_favorited = django_filters.NumberFilter(method='filter_favorited')
-    is_in_shopping_cart = django_filters.NumberFilter(method='filter_shopping_cart')
+    is_in_shopping_cart = django_filters.NumberFilter(
+        method='filter_shopping_cart'
+    )
     tags = django_filters.AllValuesMultipleFilter(field_name='tags__slug')
     author = django_filters.NumberFilter(field_name='author__id')
 
