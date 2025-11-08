@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator, RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.conf import settings
 
 USERNAME_VALIDATOR = RegexValidator(
     regex=r'^[\w.@+-]+\Z',
@@ -218,7 +218,7 @@ class RecipeIngredient(models.Model):
 
 class UserRecipeRelation(models.Model):
     user = models.ForeignKey(
-        recipes.User,
+        settings.AUTH_USER_MODEL,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
         related_name='%(class)s_set'
