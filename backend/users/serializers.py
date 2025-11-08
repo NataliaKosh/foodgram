@@ -16,7 +16,7 @@ class UserSerializer(DjoserUserSerializer):
     avatar = serializers.ImageField(source='avatar', read_only=True)
 
     class Meta(DjoserUserSerializer.Meta):
-        fields = DjoserUserSerializer.Meta.fields + ('is_subscribed',)
+        fields = DjoserUserSerializer.Meta.fields + ('is_subscribed', 'avatar')
         read_only_fields = (
             DjoserUserSerializer.Meta.read_only_fields + ('is_subscribed',)
         )
