@@ -13,7 +13,7 @@ User = get_user_model()
 class UserSerializer(DjoserUserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(source='avatar', read_only=True)
+    avatar = serializers.ImageField(read_only=True)
 
     class Meta(DjoserUserSerializer.Meta):
         fields = DjoserUserSerializer.Meta.fields + ('is_subscribed', 'avatar')
