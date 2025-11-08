@@ -41,7 +41,10 @@ class SetAvatarSerializer(serializers.ModelSerializer):
 
     def validate_avatar(self, avatar):
         """Проверяет размер загружаемого аватара."""
-        if avatar and hasattr(avatar, 'size') and avatar.size > 2 * 1024 * 1024:
+        if (
+            avatar and hasattr(avatar, 'size')
+            and avatar.size > 2 * 1024 * 1024
+        ):
             raise serializers.ValidationError(
                 'Размер файла не должен превышать 2MB'
             )
