@@ -73,16 +73,16 @@ class UserViewSet(DjoserUserViewSet):
         methods=['post', 'delete'],
         permission_classes=[permissions.IsAuthenticated],
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request, id=None):
         """Подписка и отписка на пользователя."""
         user = request.user
 
         if request.method == 'POST':
-            if pk == user.pk:
+            if id == user.pk:
                 raise ValidationError({'detail': 'Нельзя подписаться на себя'})
 
             subscription, created = Subscription.objects.get_or_create(
-                user=user, author_id=pk
+                user=user, author_id=id
             )
             if not created:
                 raise ValidationError(
@@ -98,7 +98,7 @@ class UserViewSet(DjoserUserViewSet):
             )
 
         deleted, _ = Subscription.objects.filter(
-            user=user, author_id=pk
+            user=user, author_id=id
         ).delete()
         if not deleted:
             raise ValidationError(
