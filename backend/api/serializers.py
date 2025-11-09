@@ -14,6 +14,7 @@ from recipes.models import (
     Subscription,
 )
 from .fields import Base64ImageField
+from .constants import MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT
 
 
 User = get_user_model()
@@ -101,11 +102,6 @@ class UserWithRecipesSerializer(UserSerializer):
         return RecipeShortSerializer(
             recipes_qs, many=True, context={'request': request}
         ).data
-
-
-MIN_COOKING_TIME = 1
-MIN_INGREDIENT_AMOUNT = 1
-MIN_RECIPE_FIELDS = ['id', 'name', 'image', 'cooking_time']
 
 
 def validate_unique_items(items, field_name):
@@ -247,12 +243,12 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate_ingredients(self, ingredients):
-        """Проверяет наличие и уникальность ингредиентов"""
-        return validate_unique_items(ingredients, 'ингредиент')
+        validate_unique_items(ingredients, 'ингредиент')
+        return ingredients
 
     def validate_tags(self, tags):
-        """Проверяет наличие и уникальность тегов"""
-        return validate_unique_items(tags, 'тег')
+        validate_unique_items(tags, 'тег')
+        return tags
 
     def create(self, validated_data):
         """Создает новый рецепт с тегами и ингредиентами"""
@@ -286,5 +282,5 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
     """Сериализатор для минимального представления рецепта"""
     class Meta:
         model = Recipe
-        fields = MIN_RECIPE_FIELDS
-        read_only_fields = [MIN_RECIPE_FIELDS[0]]
+        fields = ['id', 'name', 'image', 'cooking_time']
+        read_only_fields = fields
