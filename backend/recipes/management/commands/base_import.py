@@ -11,7 +11,9 @@ class BaseImportCommand(BaseCommand):
 
     def handle(self, *args, **kwargs):
         if not self.model or not self.filepath:
-            self.stderr.write(self.style.ERROR("Не указаны model или filepath"))
+            self.stderr.write(self.style.ERROR(
+                "Не указаны model или filepath"
+            ))
             return
 
         try:
@@ -21,7 +23,9 @@ class BaseImportCommand(BaseCommand):
                     self.model(**item) for item in json.load(f)
                 )
             self.stdout.write(self.style.SUCCESS(
-                f"{len(created_objs)} объектов {self.model.__name__} импортировано"
+                f"{len(
+                    created_objs
+                )} объектов {self.model.__name__} импортировано"
             ))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Ошибка импорта: {e}"))

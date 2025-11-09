@@ -23,7 +23,7 @@ from .models import (
 
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
+class UserAdmin(UserAdmin):
     list_display = (
         "id",
         "username",
