@@ -8,7 +8,7 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import viewsets, status, permissions, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError
 
 from recipes.models import (
     Tag,
@@ -163,13 +163,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт."""
-        if not Recipe.objects.filter(pk=pk).exists():
-            raise NotFound('Рецепт не найден')
-        url = request.build_absolute_uri(
-            reverse('recipe-short-link', kwargs={'pk': pk})
+        recipe = get_object_or_404(Recipe, pk=pk)
+        return Response(
+            {'short-link': request.build_absolute_uri(
+                reverse('recipe-short-link', kwargs={'pk': recipe.pk})
+            )}
         )
-
-        return Response({'short-link': url})
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -200,29 +199,28 @@ class UserViewSet(DjoserUserViewSet):
         url_path='me/avatar'
     )
     def me_avatar(self, request):
-        """
-        Управление аватаром
-        """
+        """Управление аватаром"""
         user = request.user
 
-        if request.method == 'PUT':
-            serializer = SetAvatarSerializer(
-                user, data=request.data, context={'request': request}
-            )
-            serializer.is_valid(raise_exception=True)
-            user = serializer.save()
-            avatar_url = (
-                request.build_absolute_uri(user.avatar.url)
-                if user.avatar else None
-            )
-            return Response({'avatar': avatar_url}, status=200)
-
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             if user.avatar:
                 user.avatar.delete()
                 user.avatar = None
                 user.save()
             return Response(status=204)
+
+        serializer = SetAvatarSerializer(
+            user, data=request.data, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {
+                'avatar': request.build_absolute_uri(user.avatar.url)
+                if user.avatar else None
+            },
+            status=200
+        )
 
     @action(
         detail=True,
