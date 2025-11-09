@@ -2,90 +2,95 @@ from django.contrib import admin
 from django.db.models import Count
 
 
-class UsedInRecipesFilter(admin.SimpleListFilter):
+class BaseUsedInRecipesFilter(admin.SimpleListFilter):
+    """Базовый фильтр — используется ли объект в рецептах"""
+
+    LOOKUPS = (
+        ("yes", "Используются"),
+        ("no", "Не используются"),
+    )
+
+    RELATED_NAME = None
+    COUNT_FIELD = "used_count"
+
+    def lookups(self, request, model_admin):
+        return self.LOOKUPS
+
+    def queryset(self, request, queryset):
+        queryset = queryset.annotate(
+            **{self.COUNT_FIELD: Count(self.RELATED_NAME)}
+        )
+
+        match self.value():
+            case "yes":
+                return queryset.filter(**{f"{self.COUNT_FIELD}__gt": 0})
+            case "no":
+                return queryset.filter(**{f"{self.COUNT_FIELD}": 0})
+            case _:
+                return queryset
+
+
+class UsedInRecipesFilter(BaseUsedInRecipesFilter):
     """Фильтр для ингредиентов — используются ли в рецептах"""
     title = "Есть в рецептах"
     parameter_name = "used_in_recipes"
 
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Используются"),
-            ("no", "Не используются"),
-        )
-
-    def queryset(self, request, queryset):
-        queryset = queryset.annotate(recipes_count=Count("recipes"))
-        if self.value() == "yes":
-            return queryset.filter(recipes_count__gt=0)
-        if self.value() == "no":
-            return queryset.filter(recipes_count=0)
-        return queryset
+    RELATED_NAME = "recipes"
+    COUNT_FIELD = "recipes_count"
 
 
-class TagUsedInRecipesFilter(admin.SimpleListFilter):
+class TagUsedInRecipesFilter(BaseUsedInRecipesFilter):
     """Фильтр для тегов — используются ли в рецептах"""
     title = "Есть в рецептах"
     parameter_name = "used_in_recipes"
 
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Используются"),
-            ("no", "Не используются"),
-        )
-
-    def queryset(self, request, queryset):
-        queryset = queryset.annotate(recipe_count=Count("recipes"))
-        if self.value() == "yes":
-            return queryset.filter(recipe_count__gt=0)
-        if self.value() == "no":
-            return queryset.filter(recipe_count=0)
-        return queryset
+    RELATED_NAME = "recipes"
+    COUNT_FIELD = "recipe_count"
 
 
 class CookingTimeFilter(admin.SimpleListFilter):
     """Фильтр рецептов по времени готовки"""
+
     title = "Время готовки"
     parameter_name = "cooking_time_group"
 
     def lookups(self, request, model_admin):
-        qs = model_admin.get_queryset(request).order_by("cooking_time")
-        count = qs.count()
+        qs = (
+            model_admin.get_queryset(request)
+            .order_by("cooking_time")
+            .values_list("cooking_time", flat=True)
+            .distinct()
+        )
 
-        if count == 0:
+        if qs.count() < 3:
             return ()
 
-        fast_limit = qs[count // 3].cooking_time
-        medium_limit = qs[2 * count // 3].cooking_time
+        fast_limit = qs[qs.count() // 3]
+        medium_limit = qs[2 * qs.count() // 3]
 
-        fast_count = qs.filter(cooking_time__lt=fast_limit).count()
-        medium_count = qs.filter(
-            cooking_time__gte=fast_limit,
-            cooking_time__lt=medium_limit,
-        ).count()
-        long_count = qs.filter(cooking_time__gte=medium_limit).count()
+        self.time_ranges = {
+            "fast": (None, fast_limit),
+            "medium": (fast_limit, medium_limit),
+            "long": (medium_limit, None),
+        }
 
         return (
-            ("fast", f"быстрее {fast_limit} мин ({fast_count})"),
-            ("medium", f"до {medium_limit} мин ({medium_count})"),
-            ("long", f"долго ({long_count})"),
+            ("fast", f"быстрее {fast_limit} мин"),
+            ("medium", f"до {medium_limit} мин"),
+            ("long", "долго"),
         )
 
     def queryset(self, request, queryset):
         value = self.value()
-        qs = queryset.order_by("cooking_time")
-        count = qs.count()
 
-        if not count or value not in ("fast", "medium", "long"):
+        if not value or not hasattr(self, "time_ranges"):
             return queryset
 
-        fast_limit = qs[count // 3].cooking_time
-        medium_limit = qs[2 * count // 3].cooking_time
+        start, end = self.time_ranges[value]
 
-        if value == "fast":
-            return queryset.filter(cooking_time__lt=fast_limit)
-        elif value == "medium":
-            return queryset.filter(
-                cooking_time__gte=fast_limit,
-                cooking_time__lt=medium_limit,
-            )
-        return queryset.filter(cooking_time__gte=medium_limit)
+        if start is None:
+            return queryset.filter(cooking_time__lt=end)
+        if end is None:
+            return queryset.filter(cooking_time__gte=start)
+
+        return queryset.filter(cooking_time__range=(start, end))
