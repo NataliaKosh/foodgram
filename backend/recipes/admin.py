@@ -104,7 +104,9 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
-    recipes_count = RelatedCountAdminMixin.get_count_display(None)
+    @admin.display(description=display_name)
+    def recipes_count(self, obj):
+        return self.count_display(obj)
 
 
 @admin.register(Ingredient)
@@ -117,7 +119,9 @@ class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
-    recipes_count = RelatedCountAdminMixin.get_count_display(None)
+    @admin.display(description=display_name)
+    def recipes_count(self, obj):
+        return self.count_display(obj)
 
 
 class RecipeIngredientInline(admin.TabularInline):
