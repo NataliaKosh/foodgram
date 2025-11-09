@@ -1,11 +1,10 @@
-from django.contrib.auth.password_validation import validate_password
 from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import viewsets, status, permissions, filters, serializers
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -262,43 +261,9 @@ class UserViewSet(DjoserUserViewSet):
     def subscriptions(self, request):
         """Подписки с пагинацией"""
         user = request.user
-        subscriptions = Subscription.objects.filter(user=user)
-        authors = [sub.author for sub in subscriptions]
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(authors, request)
-        serializer = UserWithRecipesSerializer(
-            page if page is not None else authors,
-            many=True,
-            context={'request': request}
+        authors = user.subscriptions.values_list('author', flat=True)
+        queryset = User.objects.filter(id__in=authors)
+        page = self.paginate_queryset(queryset)
+        return self.get_paginated_response(
+            UserWithRecipesSerializer(page, many=True, context={'request': request}).data
         )
-        return paginator.get_paginated_response(serializer.data)
-
-    @action(
-        detail=False,
-        methods=['post'],
-        url_path='set_password',
-        permission_classes=[permissions.IsAuthenticated]
-    )
-    def set_password_legacy(self, request):
-        """Старый endpoint для фронта, вручную меняет пароль."""
-        class PasswordChangeSerializer(serializers.Serializer):
-            current_password = serializers.CharField(required=True)
-            new_password = serializers.CharField(
-                required=True,
-                validators=[validate_password]
-            )
-
-            def validate_current_password(self, value):
-                if not request.user.check_password(value):
-                    raise serializers.ValidationError(
-                        "Текущий пароль неверен"
-                    )
-                return value
-
-        serializer = PasswordChangeSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        request.user.set_password(
-            serializer.validated_data['new_password']
-        )
-        request.user.save()
-        return Response(status=204)
