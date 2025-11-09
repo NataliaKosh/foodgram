@@ -92,21 +92,13 @@ class Tag(models.Model):
     slug = models.SlugField(
         max_length=32,
         verbose_name="Идентификатор URL (slug)",
-        unique=True,
-        validators=[
-            RegexValidator(
-                regex=r"^[-a-zA-Z0-9_]+\Z",
-                message=(
-                    "Slug может содержать только латинские буквы, "
-                    "цифры, дефисы и подчеркивания"
-                ),
-            )
-        ],
+        unique=True
     )
 
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -126,6 +118,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
+        ordering = ['name']
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'measurement_unit'],
@@ -179,7 +172,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ['-created']
+        ordering = ('-created')
 
     def __str__(self):
         return self.name
@@ -221,13 +214,11 @@ class UserRecipeRelation(models.Model):
         settings.AUTH_USER_MODEL,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
-        related_name='%(class)s_set'
     )
     recipe = models.ForeignKey(
-        Recipe,
+        'Recipe',
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='%(class)s_set'
     )
 
     class Meta:
@@ -242,13 +233,37 @@ class UserRecipeRelation(models.Model):
 
 class Favorite(UserRecipeRelation):
     class Meta(UserRecipeRelation.Meta):
-        db_table = 'recipes_favorite'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='favorites'
+    )
+    recipe = models.ForeignKey(
+        'Recipe',
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE,
+        related_name='favorited_by'
+    )
 
 
 class ShoppingCart(UserRecipeRelation):
     class Meta(UserRecipeRelation.Meta):
-        db_table = 'recipes_shoppingcart'
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='shopping_carts'
+    )
+    recipe = models.ForeignKey(
+        'Recipe',
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE,
+        related_name='in_shopping_carts'
+    )
