@@ -261,8 +261,8 @@ class UserViewSet(DjoserUserViewSet):
     def subscriptions(self, request):
         """Подписки с пагинацией"""
         user = request.user
-        authors = user.subscriptions.values_list('author', flat=True)
-        queryset = User.objects.filter(id__in=authors)
+        author_ids = user.subscribers.values_list('author', flat=True)
+        queryset = User.objects.filter(id__in=author_ids)
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response(
             UserWithRecipesSerializer(
