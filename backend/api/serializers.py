@@ -216,7 +216,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
-    """Сериализатор для создани и обновления рецептов"""
+    """Сериализатор для создания и обновления рецептов"""
     ingredients = IngredientInRecipeCreateSerializer(many=True)
     tags = serializers.ListField(
         child=serializers.IntegerField(),
@@ -233,15 +233,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         fields = ['id', 'ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance:
-            self.fields['image'].required = False
-
     @staticmethod
     def _set_ingredients(recipe, ingredients_data):
         """Меняет ингредиенты для рецепта, удаляя старые"""
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        recipe.recipe_ingredients.all().delete()
+
         RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
@@ -263,7 +259,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
 
-        recipe = Recipe.objects.create(**validated_data)
+        recipe = super().create(validated_data)
         recipe.tags.set(tags_data)
 
         self._set_ingredients(recipe, ingredients_data)
@@ -274,12 +270,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
 
-        instance = super().update(instance, validated_data)
-
         instance.tags.set(tags_data)
         self._set_ingredients(instance, ingredients_data)
 
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         """Возвращает сериализованные данные через RecipeSerializer"""
