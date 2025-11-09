@@ -4,13 +4,11 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
-
+from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import viewsets, status, permissions, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound
-
-from djoser.views import UserViewSet as DjoserUserViewSet
 
 from recipes.models import (
     Tag,
@@ -63,19 +61,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-        return queryset.distinct()
-
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeWriteSerializer
         return RecipeSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(
