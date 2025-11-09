@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
 from djoser.serializers import UserSerializer as DjoserUserSerializer
+from rest_framework import serializers
 
 from recipes.models import (
     Favorite,
@@ -21,7 +21,6 @@ User = get_user_model()
 class UserSerializer(DjoserUserSerializer):
     """Сериализатор для пользователя."""
     is_subscribed = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(read_only=True)
 
     class Meta(DjoserUserSerializer.Meta):
         fields = DjoserUserSerializer.Meta.fields + ('is_subscribed', 'avatar')
