@@ -3,6 +3,8 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
+from django.utils.timezone import now
+from django.template.loader import render_to_string
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import viewsets, status, permissions, filters
 from rest_framework.decorators import action
@@ -29,7 +31,6 @@ from .serializers import (
     UserWithRecipesSerializer,
     UserSerializer,
 )
-from .services.shopping_list import generate_shopping_list_text
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
 from .filters import RecipeFilter
@@ -142,9 +143,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             shoppingcart_set__user=user
         ).select_related('author')
 
-        content = generate_shopping_list_text(
-            ingredients=ingredients,
-            recipes=recipes,
+        content = render_to_string(
+            'shopping_list.txt',
+            {
+                'ingredients': ingredients,
+                'recipes': recipes,
+                'date': now().strftime('%d.%m.%Y'),
+            }
         )
 
         return FileResponse(
