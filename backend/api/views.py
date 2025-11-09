@@ -238,9 +238,13 @@ class UserViewSet(DjoserUserViewSet):
         if id == user.pk:
             raise ValidationError({'detail': 'Нельзя подписаться на себя'})
 
-        _, created = Subscription.objects.get_or_create(user=user, author_id=id)
+        _, created = Subscription.objects.get_or_create(
+            user=user, author_id=id
+        )
         if not created:
-            raise ValidationError({'detail': 'Вы уже подписаны на пользователя'})
+            raise ValidationError(
+                {'detail': 'Вы уже подписаны на пользователя'}
+            )
 
         return Response(
             UserWithRecipesSerializer(
