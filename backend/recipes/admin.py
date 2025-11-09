@@ -226,23 +226,13 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
     search_fields = ('recipe__name', 'ingredient__name')
 
 
-@admin.register(Favorite)
-class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("user", "recipe", "user_email")
-    list_filter = ("user", "recipe")
-    search_fields = ("user__email", "user__username", "recipe__name")
-
-    @admin.display(description="Email пользователя")
-    def user_email(self, favorite):
-        return favorite.user.email
-
-
 @admin.register(ShoppingCart)
-class ShoppingCartAdmin(admin.ModelAdmin):
+@admin.register(Favorite)
+class UserRecipeRelationAdmin(admin.ModelAdmin):
     list_display = ("user", "recipe", "user_email")
     list_filter = ("user", "recipe")
     search_fields = ("user__email", "user__username", "recipe__name")
 
     @admin.display(description="Email пользователя")
-    def user_email(self, cart):
-        return cart.user.email
+    def user_email(self, obj):
+        return obj.user.email
