@@ -1,3 +1,4 @@
+from collections import Counter
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer as DjoserUserSerializer
@@ -105,10 +106,6 @@ class UserWithRecipesSerializer(UserSerializer):
 MIN_COOKING_TIME = 1
 MIN_INGREDIENT_AMOUNT = 1
 MIN_RECIPE_FIELDS = ['id', 'name', 'image', 'cooking_time']
-RECIPE_FIELDS = [
-    'id', 'tags', 'author', 'ingredients', 'is_favorited',
-    'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
-]
 
 
 def validate_unique_items(items, field_name):
@@ -118,24 +115,27 @@ def validate_unique_items(items, field_name):
             f'Добавьте хотя бы один {field_name}'
         )
 
-    seen_ids = set()
-    duplicates = []
-    for item in items:
-        if isinstance(item, dict):
-            item_id = item.get('id')
-        else:
-            item_id = getattr(item, 'id', item)
+    item_ids = [
+        (
+            item.get('id')
+            if isinstance(item, dict)
+            else getattr(item, 'id', item)
+        )
+        for item in items
+    ]
 
-        if item_id in seen_ids:
-            duplicates.append(item_id)
-        seen_ids.add(item_id)
+    duplicates = [
+        item_id for item_id, count
+        in Counter(item_ids).items()
+        if count > 1
+    ]
 
     if duplicates:
-        raise serializers.ValidationError(
-            f'{field_name.capitalize()} не должны повторяться: {duplicates}'
+        msg = (
+            f'{field_name.capitalize()} не должны повторяться: '
+            f'{duplicates}'
         )
-
-    return items
+        raise serializers.ValidationError(msg)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -152,12 +152,11 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
     )
-    amount = serializers.ReadOnlyField()
 
     class Meta:
         model = RecipeIngredient
         fields = ['id', 'name', 'measurement_unit', 'amount']
-        read_only_fields = ['id', 'name', 'measurement_unit', 'amount']
+        read_only_fields = fields
 
 
 class IngredientInRecipeCreateSerializer(serializers.Serializer):
@@ -191,8 +190,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = RECIPE_FIELDS
-        read_only_fields = [RECIPE_FIELDS[0]]
+        fields = [
+            'id', 'tags', 'author', 'ingredients', 'is_favorited',
+            'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
+        ]
+        read_only_fields = fields
 
     def _check_user_related(self, obj, model_cls):
         """Проверяет, добавлен ли рецепт в избранное или в корзину покупок."""
