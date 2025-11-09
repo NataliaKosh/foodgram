@@ -22,10 +22,11 @@ class BaseImportCommand(BaseCommand):
                 created_objs = self.model.objects.bulk_create(
                     self.model(**item) for item in json.load(f)
                 )
-            self.stdout.write(self.style.SUCCESS(
-                f"{len(
-                    created_objs
-                )} объектов {self.model.__name__} импортировано"
-            ))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"{len(created_objs)} объектов {self.model.__name__} "
+                    "импортировано"
+                )
+            )
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Ошибка импорта: {e}"))
