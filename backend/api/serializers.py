@@ -23,10 +23,8 @@ class UserSerializer(DjoserUserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta(DjoserUserSerializer.Meta):
-        fields = DjoserUserSerializer.Meta.fields + ('is_subscribed', 'avatar')
-        read_only_fields = (
-            DjoserUserSerializer.Meta.read_only_fields + ('is_subscribed',)
-        )
+        fields = [*DjoserUserSerializer.Meta.fields, 'is_subscribed', 'avatar']
+        read_only_fields = fields
 
     def get_is_subscribed(self, author):
         """Проверят подписан ли ползьватель на данного автора."""
@@ -70,6 +68,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = fields
 
 
 class UserWithRecipesSerializer(UserSerializer):
@@ -81,10 +80,8 @@ class UserWithRecipesSerializer(UserSerializer):
     )
 
     class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
-        read_only_fields = UserSerializer.Meta.read_only_fields + (
-            'recipes', 'recipes_count'
-        )
+        fields = [*UserSerializer.Meta.fields, 'recipes', 'recipes_count']
+        read_only_fields = fields
 
     def get_recipes(self, user):
         """Список рецептов пользователя."""
@@ -103,11 +100,6 @@ class UserWithRecipesSerializer(UserSerializer):
         return RecipeShortSerializer(
             recipes_qs, many=True, context={'request': request}
         ).data
-
-
-class SubscriptionListSerializer(UserWithRecipesSerializer):
-    """Сериализатор для подписок текущего пользователя."""
-    is_subscribed = serializers.SerializerMethodField()
 
 
 MIN_COOKING_TIME = 1

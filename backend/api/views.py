@@ -29,7 +29,7 @@ from .serializers import (
     RecipeWriteSerializer,
     RecipeMinifiedSerializer,
     SetAvatarSerializer,
-    SubscriptionListSerializer,
+    UserWithRecipesSerializer,
     UserSerializer,
 )
 from .services.shopping_list import generate_shopping_list_text
@@ -247,7 +247,7 @@ class UserViewSet(DjoserUserViewSet):
                 )
 
             author = subscription.author
-            serializer = SubscriptionListSerializer(
+            serializer = UserWithRecipesSerializer(
                 author, context={'request': request}
             )
             return Response(
@@ -276,7 +276,7 @@ class UserViewSet(DjoserUserViewSet):
         authors = [sub.author for sub in subscriptions]
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(authors, request)
-        serializer = SubscriptionListSerializer(
+        serializer = UserWithRecipesSerializer(
             page if page is not None else authors,
             many=True,
             context={'request': request}
