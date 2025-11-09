@@ -89,28 +89,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def _add_remove_relation(self, request, pk, model):
         """Добавление или удаление рецепта из избранного / корзины."""
-        user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-
-        action_name = 'избранное' if model is Favorite else 'список покупок'
+        action_name = model._meta.verbose_name
 
         if request.method == 'POST':
-            obj, created = model.objects.get_or_create(
-                user=user,
-                recipe=recipe,
+            _, created = model.objects.get_or_create(
+                user=request.user,
+                recipe_id=pk,
             )
             if not created:
                 raise ValidationError(
-                    f'Рецепт "{recipe.name}" уже добавлен в {action_name}'
+                    f'Рецепт уже добавлен в {action_name}'
                 )
+            return Response(
+                RecipeMinifiedSerializer(
+                    get_object_or_404(
+                        Recipe,
+                        pk=pk
+                    ),
+                    context={'request': request}
+                ).data,
+                status=status.HTTP_201_CREATED
+            )
 
-            serializer = RecipeMinifiedSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        deleted, _ = model.objects.filter(user=user, recipe=recipe).delete()
+        recipe = get_object_or_404(Recipe, pk=pk)
+        deleted, _ = model.objects.filter(
+            user=request.user, recipe=recipe
+        ).delete()
         if not deleted:
-            raise ValidationError('Рецепт не был добавлен')
-
+            raise ValidationError(
+                f'Рецепт не был добавлен в {action_name}'
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
