@@ -38,7 +38,7 @@ class UserAdmin(UserAdmin):
         "is_staff",
         "is_active",
         ("recipes", admin.EmptyFieldListFilter),
-        ("followers", admin.EmptyFieldListFilter),
+        ("subscriptions_for_author", admin.EmptyFieldListFilter),
         ("subscribers", admin.EmptyFieldListFilter),
     )
     search_fields = ("username", "email")
@@ -52,7 +52,7 @@ class UserAdmin(UserAdmin):
             .annotate(
                 _recipes_count=Count("recipes", distinct=True),
                 _subscriptions_count=Count("subscribers", distinct=True),
-                _followers_count=Count("followers", distinct=True),
+                _followers_count = Count("subscriptions_for_author", distinct=True),
             )
         )
         return queryset
