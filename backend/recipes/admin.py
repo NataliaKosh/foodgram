@@ -9,7 +9,6 @@ from .admin_filters import (
     TagUsedInRecipesFilter,
     CookingTimeFilter
 )
-
 from .models import (
     Tag,
     Ingredient,
@@ -20,6 +19,7 @@ from .models import (
     User,
     Subscription
 )
+from .admin_mixins import RelatedCountAdminMixin
 
 
 @admin.register(User)
@@ -33,7 +33,6 @@ class UserAdmin(UserAdmin):
         "recipes_count",
         "subscriptions_count",
         "followers_count",
-        "is_staff",
     )
     list_filter = (
         "is_staff",
@@ -69,21 +68,21 @@ class UserAdmin(UserAdmin):
             )
         return "—"
 
+    @admin.display(description="ФИО")
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
-    full_name.short_description = "ФИО"
 
+    @admin.display(description="Рецептов")
     def recipes_count(self, obj):
         return obj._recipes_count
-    recipes_count.short_description = "Рецептов"
 
+    @admin.display(description="Подписок")
     def subscriptions_count(self, obj):
         return obj._subscriptions_count
-    subscriptions_count.short_description = "Подписок"
 
+    @admin.display(description="Подписчиков")
     def followers_count(self, obj):
         return obj._followers_count
-    followers_count.short_description = "Подписчиков"
 
 
 @admin.register(Subscription)
@@ -96,36 +95,29 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "recipes_count")
     search_fields = ("name", "slug")
     list_filter = (TagUsedInRecipesFilter,)
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.annotate(recipe_count=Count("recipes", distinct=True))
+    related_name = "recipes"
+    count_field_name = "_recipes_count"
+    display_name = "Рецептов"
 
-    def recipes_count(self, obj):
-        return obj.recipe_count
-    recipes_count.short_description = "Рецептов"
-    recipes_count.admin_order_field = "recipe_count"
+    recipes_count = RelatedCountAdminMixin.get_count_display(None)
 
 
 @admin.register(Ingredient)
-class IngredientAdmin(admin.ModelAdmin):
+class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     list_display = ("name", "measurement_unit", "recipes_count")
     search_fields = ("name", "measurement_unit", "slug")
     list_filter = ("measurement_unit", UsedInRecipesFilter)
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.annotate(_recipes_count=Count("recipes", distinct=True))
+    related_name = "recipes"
+    count_field_name = "_recipes_count"
+    display_name = "Рецептов"
 
-    def recipes_count(self, obj):
-        return getattr(obj, "_recipes_count", obj.recipes.count())
-
-    recipes_count.short_description = "Рецептов"
-    recipes_count.admin_order_field = "_recipes_count"
+    recipes_count = RelatedCountAdminMixin.get_count_display(None)
 
 
 class RecipeIngredientInline(admin.TabularInline):
