@@ -20,21 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY is not set in environment variables")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-for-local")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = [
-    'nataliayap.ddns.net',
-    '89.169.162.157',
-    'localhost',
-    '127.0.0.1',
-    'backend',
-]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
@@ -59,9 +50,9 @@ INSTALLED_APPS = [
 ]
 
 JAZZMIN_SETTINGS = {
-    'site_title': 'Мой Сайт',
-    'site_header': 'Моя Админка',
-    'site_brand': 'Мой Бренд',
+    'site_title': 'Сайт',
+    'site_header': 'Админка',
+    'site_brand': 'Бренд',
     'welcome_sign': 'Добро пожаловать!',
 }
 
