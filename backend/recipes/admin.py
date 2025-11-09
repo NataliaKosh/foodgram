@@ -141,14 +141,12 @@ class RecipeAdmin(admin.ModelAdmin):
         "show_ingredients",
         "show_tags",
         "show_image",
-        "created",
     )
 
     list_filter = (
         ("tags", RelatedOnlyFieldListFilter),
         ("author", RelatedOnlyFieldListFilter),
         CookingTimeFilter,
-        "created",
     )
 
     search_fields = (
@@ -164,14 +162,16 @@ class RecipeAdmin(admin.ModelAdmin):
     @admin.display(description="Продукты")
     @mark_safe
     def show_ingredients(self, recipe):
-        ingredients = recipe.ingredients.values_list("name", flat=True)
-        return "<br>".join(ingredients)
+        return "<br>".join(
+            f"{ri.ingredient.name} — {ri.amount} "
+            f"{ri.ingredient.measurement_unit}"
+            for ri in recipe.recipe_ingredients.all()
+        )
 
     @admin.display(description="Теги")
     @mark_safe
     def show_tags(self, recipe):
-        tags = recipe.tags.values_list("name", flat=True)
-        return ", ".join(tags)
+        return "<br>".join(tag.name for tag in recipe.tags.all())
 
     @admin.display(description="Картинка")
     @mark_safe
@@ -187,17 +187,19 @@ class RecipeAdmin(admin.ModelAdmin):
     def favorites_count(self, recipe):
         return recipe.favorite_set.count()
 
-    @admin.display(description="Добавлений в избранное")
+    @admin.display(description="В избранном")
     def favorites_count_display(self, recipe):
-        return f"{self.favorites_count(recipe)} раз(а)"
+        return recipe.favorite_set.count()
 
-    @admin.display(description="Добавлений в корзины покупок")
+    @admin.display(description="В корзинах")
     def in_shopping_carts_count_display(self, recipe):
-        return f"{recipe.shopping_cart.count()} раз(а)"
+        return recipe.shoppingcart_set.count()
 
     fieldsets = (
         ("Основная информация", {
-            "fields": ("name", "author", "image", "text", "cooking_time"),
+            "fields": (
+                "name", "author", "image", "text", "cooking_time"
+            ),
         }),
         ("Теги", {
             "fields": ("tags",),
