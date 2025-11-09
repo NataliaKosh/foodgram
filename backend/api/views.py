@@ -231,35 +231,24 @@ class UserViewSet(DjoserUserViewSet):
         """Подписка и отписка на пользователя."""
         user = request.user
 
-        if request.method == 'POST':
-            if id == user.pk:
-                raise ValidationError({'detail': 'Нельзя подписаться на себя'})
+        if request.method != 'POST':
+            get_object_or_404(Subscription, user=user, author_id=id).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-            subscription, created = Subscription.objects.get_or_create(
-                user=user, author_id=id
-            )
-            if not created:
-                raise ValidationError(
-                    {'detail': 'Вы уже подписаны на этого пользователя'}
-                )
+        if id == user.pk:
+            raise ValidationError({'detail': 'Нельзя подписаться на себя'})
 
-            author = subscription.author
-            serializer = UserWithRecipesSerializer(
-                author, context={'request': request}
-            )
-            return Response(
-                serializer.data, status=status.HTTP_201_CREATED
-            )
+        _, created = Subscription.objects.get_or_create(user=user, author_id=id)
+        if not created:
+            raise ValidationError({'detail': 'Вы уже подписаны на пользователя'})
 
-        deleted, _ = Subscription.objects.filter(
-            user=user, author_id=id
-        ).delete()
-        if not deleted:
-            raise ValidationError(
-                {'detail': 'Вы не подписаны на этого пользователя'}
-            )
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            UserWithRecipesSerializer(
+                get_object_or_404(User, pk=id),
+                context={'request': request}
+            ).data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=False,
