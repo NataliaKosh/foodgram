@@ -21,13 +21,12 @@ class BaseUsedInRecipesFilter(admin.SimpleListFilter):
             **{self.COUNT_FIELD: Count(self.RELATED_NAME)}
         )
 
-        match self.value():
-            case "yes":
-                return queryset.filter(**{f"{self.COUNT_FIELD}__gt": 0})
-            case "no":
-                return queryset.filter(**{f"{self.COUNT_FIELD}": 0})
-            case _:
-                return queryset
+        value = self.value()
+        if value == "yes":
+            return queryset.filter(**{f"{self.COUNT_FIELD}__gt": 0})
+        elif value == "no":
+            return queryset.filter(**{f"{self.COUNT_FIELD}": 0})
+        return queryset
 
 
 class UsedInRecipesFilter(BaseUsedInRecipesFilter):
