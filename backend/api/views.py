@@ -265,5 +265,7 @@ class UserViewSet(DjoserUserViewSet):
         queryset = User.objects.filter(id__in=authors)
         page = self.paginate_queryset(queryset)
         return self.get_paginated_response(
-            UserWithRecipesSerializer(page, many=True, context={'request': request}).data
+            UserWithRecipesSerializer(
+                page, many=True, context={'request': request}
+            ).data
         )
