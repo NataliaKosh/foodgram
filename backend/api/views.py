@@ -91,35 +91,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавление или удаление рецепта из избранного / корзины."""
         action_name = model._meta.verbose_name
 
-        if request.method == 'POST':
-            _, created = model.objects.get_or_create(
+        if request.method != 'POST':
+            get_object_or_404(
+                model,
                 user=request.user,
-                recipe_id=pk,
-            )
-            if not created:
-                raise ValidationError(
-                    f'Рецепт уже добавлен в {action_name}'
-                )
-            return Response(
-                RecipeMinifiedSerializer(
-                    get_object_or_404(
-                        Recipe,
-                        pk=pk
-                    ),
-                    context={'request': request}
-                ).data,
-                status=status.HTTP_201_CREATED
+                recipe_id=pk
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        _, created = model.objects.get_or_create(
+            user=request.user,
+            recipe_id=pk,
+        )
+        if not created:
+            raise ValidationError(
+                f'Рецепт уже добавлен в {action_name}'
             )
 
-        recipe = get_object_or_404(Recipe, pk=pk)
-        deleted, _ = model.objects.filter(
-            user=request.user, recipe=recipe
-        ).delete()
-        if not deleted:
-            raise ValidationError(
-                f'Рецепт не был добавлен в {action_name}'
-            )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            RecipeMinifiedSerializer(
+                get_object_or_404(Recipe, pk=pk),
+                context={'request': request}
+            ).data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=False,
@@ -167,11 +162,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт."""
-        recipe = get_object_or_404(Recipe, pk=pk)
+        if not Recipe.objects.filter(pk=pk).exists():
+            raise ValidationError({'detail': 'Рецепт не найден'})
+
         return Response(
-            {'short-link': request.build_absolute_uri(
-                reverse('recipe-short-link', kwargs={'pk': recipe.pk})
-            )}
+            {
+                'short-link': request.build_absolute_uri(
+                    reverse('recipe-short-link', args=[pk])
+                )
+            }
         )
 
 
@@ -242,17 +241,19 @@ class UserViewSet(DjoserUserViewSet):
         if id == user.pk:
             raise ValidationError({'detail': 'Нельзя подписаться на себя'})
 
+        author = get_object_or_404(User, pk=id)
+
         _, created = Subscription.objects.get_or_create(
-            user=user, author_id=id
+            user=user, author=author
         )
         if not created:
             raise ValidationError(
-                {'detail': 'Вы уже подписаны на пользователя'}
+                {'detail': f'Вы уже подписаны на пользователя {author.username}'}
             )
 
         return Response(
             UserWithRecipesSerializer(
-                get_object_or_404(User, pk=id),
+                author,
                 context={'request': request}
             ).data,
             status=status.HTTP_201_CREATED
