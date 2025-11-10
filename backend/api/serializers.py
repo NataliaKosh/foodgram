@@ -13,9 +13,10 @@ from recipes.models import (
     ShoppingCart,
     Tag,
     Subscription,
+    MIN_COOKING_TIME,
+    MIN_INGREDIENT_AMOUNT
 )
 from .fields import Base64ImageField
-from .constants import MIN_COOKING_TIME, MIN_INGREDIENT_AMOUNT
 
 
 User = get_user_model()

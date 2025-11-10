@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
 import json
 import os
+
+from django.core.management.base import BaseCommand
 
 
 class BaseImportCommand(BaseCommand):
@@ -11,10 +12,10 @@ class BaseImportCommand(BaseCommand):
 
     def handle(self, *args, **kwargs):
         if not self.model or not self.filepath:
-            self.stderr.write(self.style.ERROR(
-                "Не указаны model или filepath"
-            ))
-            return
+            self.stderr.write(
+                self.style.ERROR("Не указаны model или filepath")
+            )
+        return
 
         try:
             full_path = os.path.join('data', self.filepath)
@@ -24,9 +25,13 @@ class BaseImportCommand(BaseCommand):
                 )
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"{len(created_objs)} объектов {self.model.__name__} "
-                    "импортировано"
+                    f"{len(created_objs)} объектов {self.model.__name__} из файла "
+                    f"{self.filepath} импортировано"
                 )
             )
         except Exception as e:
-            self.stderr.write(self.style.ERROR(f"Ошибка импорта: {e}"))
+            self.stderr.write(
+                self.style.ERROR(
+                    f"Ошибка импорта из файла {self.filepath}: {e}"
+                )
+            )
