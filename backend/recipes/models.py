@@ -91,14 +91,14 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         max_length=32,
-        verbose_name="Идентификатор URL (slug)",
+        verbose_name="Идентификатор",
         unique=True
     )
 
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ['name']
+        ordering = ('name')
 
     def __str__(self):
         return self.name
@@ -216,7 +216,7 @@ class UserRecipeRelation(models.Model):
         on_delete=models.CASCADE,
     )
     recipe = models.ForeignKey(
-        'Recipe',
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
     )
@@ -236,34 +236,8 @@ class Favorite(UserRecipeRelation):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        verbose_name='Пользователь',
-        on_delete=models.CASCADE,
-        related_name='favorites'
-    )
-    recipe = models.ForeignKey(
-        'Recipe',
-        verbose_name='Рецепт',
-        on_delete=models.CASCADE,
-        related_name='favorited_by'
-    )
-
 
 class ShoppingCart(UserRecipeRelation):
     class Meta(UserRecipeRelation.Meta):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        verbose_name='Пользователь',
-        on_delete=models.CASCADE,
-        related_name='shopping_carts'
-    )
-    recipe = models.ForeignKey(
-        'Recipe',
-        verbose_name='Рецепт',
-        on_delete=models.CASCADE,
-        related_name='in_shopping_carts'
-    )
