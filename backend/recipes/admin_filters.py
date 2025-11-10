@@ -68,9 +68,9 @@ class CookingTimeFilter(admin.SimpleListFilter):
         medium_limit = qs[2 * qs.count() // 3]
 
         self.time_ranges = {
-            "fast": (None, fast_limit),
+            "fast": (0, fast_limit),
             "medium": (fast_limit, medium_limit),
-            "long": (medium_limit, None),
+            "long": (medium_limit, 10**6),
         }
 
         return (
@@ -81,15 +81,7 @@ class CookingTimeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         value = self.value()
-
-        if not value or not hasattr(self, "time_ranges"):
+        if not value or value not in self.time_ranges:
             return queryset
 
-        start, end = self.time_ranges[value]
-
-        if start is None:
-            return queryset.filter(cooking_time__lt=end)
-        if end is None:
-            return queryset.filter(cooking_time__gte=start)
-
-        return queryset.filter(cooking_time__range=(start, end))
+        return queryset.filter(cooking_time__range=self.time_ranges[value])
