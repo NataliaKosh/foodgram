@@ -248,7 +248,12 @@ class UserViewSet(DjoserUserViewSet):
         )
         if not created:
             raise ValidationError(
-                {'detail': f'Вы уже подписаны на пользователя {author.username}'}
+                {
+                    'detail': (
+                        f'Вы уже подписаны на пользователя '
+                        f'{author.username}'
+                    )
+                }
             )
 
         return Response(
