@@ -1,185 +1,114 @@
 # Foodgram - Платформа для публикации рецептов
 
 ## О проекте
+
 Foodgram — это современная веб-платформа, где пользователи могут публиковать свои кулинарные рецепты, добавлять понравившиеся рецепты в избранное, подписываться на публикации других авторов и пользоваться удобным сервисом «Список покупок».
+
+## Автор
+
+* Наталия Васильева
+* E-mail: nataliakosh17@gmail.com
+
 
 ## Основные возможности
 
-### Для всех пользователей
-- ** Просмотр рецептов** - Доступ к библиотеке рецептов от сообщества
-- ** Просмотр профилей** - Знакомство с авторами и их рецептами
-- ** Поиск и фильтрация** - Поиск рецептов по ингредиентам и фильтрация по тегам
+Для всех пользователей:
 
-### Для зарегистрированных пользователей
-- ** Публикация рецептов** - Создание и редактирование собственных рецептов
-- ** Избранное** - Сохранение понравившихся рецептов
-- ** Подписки** - Слежение за публикациями любимых авторов
-- ** Список покупок** - Формирование списка продуктов для выбранных рецептов
-- ** Личный кабинет** - Управление профилем и настройками аккаунта
+* Просмотр рецептов — доступ к библиотеке рецептов от сообщества
+* Просмотр профилей — знакомство с авторами и их рецептами
+* Поиск и фильтрация — поиск рецептов по ингредиентам и фильтрация по тегам
 
-### Технологии
+Для зарегистрированных пользователей:
 
-**Backend:**
-- Python + Django 5.2.7
-- Django REST Framework 3.16.1
-- Djoser 2.3.3 для аутентификации
-- Simple JWT 5.5.1
-- Token-based авторизация
-- Pillow 12.0.0 для работы с изображениями
+* Публикация рецептов — создание и редактирование собственных рецептов
+* Избранное — сохранение понравившихся рецептов
+* Подписки — слежение за публикациями любимых авторов
+* Список покупок — формирование списка продуктов для выбранных рецептов
+* Личный кабинет — управление профилем и настройками аккаунта
 
-**Frontend:** React (SPA)
+## Технологии
 
-**База данных:** PostgreSQL (psycopg2-binary 2.9.11)
+Backend:
 
-**Деплой:** Docker + Nginx
+* Python + Django
+* Django REST Framework
+* Djoser для аутентификации
+* Simple JWT
+* Token-based авторизация
+* Pillow для работы с изображениями
 
-## Примеры запросов API
+Frontend: React (SPA)
 
-### 1. Аутентификация
+База данных: PostgreSQL (psycopg2-binary 2.9.9)
 
-**Получение токена:**
-```
-POST http://foodgram.example.org/api/auth/token/login/
-Content-Type: application/json
+Деплой: Docker + Nginx
 
-{
-  "email": "user@example.com",
-  "password": "yourpassword"
-}
-```
+## Команды для запуска и развертывания
 
-**Удаление токена:**
-```
-POST http://foodgram.example.org/api/auth/token/logout/
-Authorization: Token your_token_here
-```
+Локальный запуск без Docker:
 
-### 2. Пользователи
+1. Создать и активировать виртуальное окружение:
 
-**Регистрация пользователя:**
-```
-POST http://foodgram.example.org/api/users/
-Content-Type: application/json
+   * python -m venv venv
+   * source venv/bin/activate   (Linux/macOS)
+   * venv\Scripts\activate      (Windows)
+2. Установить зависимости:
 
-{
-  "email": "newuser@example.com",
-  "username": "newuser",
-  "first_name": "Иван",
-  "last_name": "Петров",
-  "password": "securepassword123"
-}
-```
+   * pip install --upgrade pip
+   * pip install -r requirements.txt
+3. Создать .env файл с переменными окружения:
+   SECRET_KEY=ваш_секретный_ключ
+   DEBUG=True
+   POSTGRES_USER=foodgram_user
+   POSTGRES_PASSWORD=ваш_пароль
+   POSTGRES_DB=foodgram
+   DB_HOST=localhost
+   DB_PORT=5432
+   ALLOWED_HOSTS=localhost,127.0.0.1
+4. Применить миграции:
 
-**Получить текущего пользователя:**
-```
-GET http://foodgram.example.org/api/users/me/
-Authorization: Token your_token_here
-```
+   * python manage.py makemigrations
+   * python manage.py migrate
+5. Импорт данных (фикстуры):
 
-**Изменить пароль:**
-```
-POST http://foodgram.example.org/api/users/set_password/
-Authorization: Token your_token_here
-Content-Type: application/json
+   * python manage.py import_tags
+   * python manage.py import_ingredients
+6. Создать суперпользователя (для доступа к админке):
 
-{
-  "new_password": "newsecurepassword123",
-  "current_password": "oldpassword"
-}
-```
+   * python manage.py createsuperuser
+7. Запустить сервер разработки:
 
-### 3. Рецепты
+   * python manage.py runserver
 
-**Получить список рецептов с фильтрацией:**
-```
-GET http://foodgram.example.org/api/recipes/?page=1&limit=10&is_favorited=1&tags=breakfast&author=5
-```
+Доступы после запуска:
 
-**Создать рецепт:**
-```
-POST http://foodgram.example.org/api/recipes/
-Authorization: Token your_token_here
-Content-Type: application/json
+* API документация: http://127.0.0.1:8000/api/
+* Админка Django: http://127.0.0.1:8000/admin/
+* Сервер: http://127.0.0.1:8000/
 
-{
-  "ingredients": [
-    {"id": 1, "amount": 200},
-    {"id": 2, "amount": 2}
-  ],
-  "tags": [1, 2],
-  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-  "name": "Новый рецепт",
-  "text": "Описание нового рецепта",
-  "cooking_time": 30
-}
-```
+Запуск через Docker (продакшн):
 
-**Обновить рецепт:**
-```
-PATCH http://foodgram.example.org/api/recipes/123/
-Authorization: Token your_token_here
-Content-Type: application/json
+1. Создать .env с нужными переменными (аналогично локальному запуску)
+2. Запустить Docker Compose:
 
-{
-  "name": "Обновленное название рецепта",
-  "text": "Обновленное описание",
-  "cooking_time": 35,
-  "ingredients": [
-    {"id": 1, "amount": 250},
-    {"id": 3, "amount": 1}
-  ],
-  "tags": [1, 3]
-}
-```
+   * docker compose -f docker_compose.production.yml up -d
+3. Выполнить миграции и собрать статику:
 
-### 4. Избранное и корзина
+   * docker compose run --rm backend python manage.py makemigrations
+   * docker compose run --rm backend python manage.py migrate
+   * docker compose exec backend python manage.py collectstatic --noinput
+4. Импорт данных:
 
-**Добавить в избранное:**
-```
-POST http://foodgram.example.org/api/recipes/123/favorite/
-Authorization: Token your_token_here
-```
+   * docker compose run --rm backend python manage.py import_tags
+   * docker compose run --rm backend python manage.py import_ingredients
 
-**Удалить из избранного:**
-```
-DELETE http://foodgram.example.org/api/recipes/123/favorite/
-Authorization: Token your_token_here
-```
+Команды для тестов:
 
-**Добавить в список покупок:**
-```
-POST http://foodgram.example.org/api/recipes/123/shopping_cart/
-Authorization: Token your_token_here
-```
+* Проверка кода линтером: flake8 backend/
 
-**Скачать список покупок:**
-```
-GET http://foodgram.example.org/api/recipes/download_shopping_cart/
-Authorization: Token your_token_here
-```
+Полезные ссылки:
 
-### 5. Подписки
-
-**Подписаться на пользователя:**
-```
-POST http://foodgram.example.org/api/users/5/subscribe/
-Authorization: Token your_token_here
-```
-
-**Получить мои подписки:**
-```
-GET http://foodgram.example.org/api/users/subscriptions/?page=1&limit=10&recipes_limit=3
-Authorization: Token your_token_here
-```
-
-### 6. Ингредиенты и теги
-
-**Поиск ингредиентов:**
-```
-GET http://foodgram.example.org/api/ingredients/?name=карто
-```
-
-**Получить все теги:**
-```
-GET http://foodgram.example.org/api/tags/
-```
+* Документация Django REST Framework: https://www.django-rest-framework.org/
+* Djoser — аутентификация Django REST: https://djoser.readthedocs.io/
+* Docker документация: https://docs.docker.com/
+---
