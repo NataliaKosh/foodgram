@@ -1,4 +1,5 @@
 from collections import Counter
+
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer as DjoserUserSerializer
@@ -88,19 +89,19 @@ class UserWithRecipesSerializer(UserSerializer):
     def get_recipes(self, user):
         """Список рецептов пользователя."""
         request = self.context.get('request')
-        recipes_qs = user.recipes.all()
+        recipes = user.recipes.all()
 
         recipes_limit = (
             request.query_params.get('recipes_limit') if request else None
         )
         try:
             if recipes_limit is not None:
-                recipes_qs = recipes_qs[:int(recipes_limit)]
+                recipes = recipes[:int(recipes_limit)]
         except (ValueError, TypeError):
             pass
 
         return RecipeShortSerializer(
-            recipes_qs, many=True, context={'request': request}
+            recipes, many=True, context={'request': request}
         ).data
 
 
