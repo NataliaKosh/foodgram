@@ -25,8 +25,8 @@ class BaseImportCommand(BaseCommand):
                 )
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"{len(created_objs)} объектов {self.model.__name__} из файла "
-                    f"{self.filepath} импортировано"
+                    f"{len(created_objs)} объектов {self.model.__name__} "
+                    f"из файла {self.filepath} импортировано"
                 )
             )
         except Exception as e:
