@@ -23,7 +23,7 @@ from .admin_mixins import RelatedCountAdminMixin
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin):
+class UserAdmin(UserAdmin, RelatedCountAdminMixin):
     list_display = (
         "id",
         "username",
@@ -43,6 +43,8 @@ class UserAdmin(UserAdmin):
     )
     search_fields = ("username", "email")
     ordering = ("id",)
+    count_field_name = "_recipes_count"
+    display_name = "Рецептов"
 
     def get_queryset(self, request):
         """Оптимизируем запрос — добавляем аннотации для подсчётов"""
@@ -74,10 +76,6 @@ class UserAdmin(UserAdmin):
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
 
-    @admin.display(description="Рецептов")
-    def recipes_count(self, obj):
-        return obj._recipes_count
-
     @admin.display(description="Подписок")
     def subscriptions_count(self, obj):
         return obj._subscriptions_count
@@ -106,10 +104,6 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
-    @admin.display(description=display_name)
-    def recipes_count(self, obj):
-        return self.count_display(obj)
-
 
 @admin.register(Ingredient)
 class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
@@ -120,10 +114,6 @@ class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     related_name = "recipes"
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
-
-    @admin.display(description=display_name)
-    def recipes_count(self, obj):
-        return self.count_display(obj)
 
 
 class RecipeIngredientInline(admin.TabularInline):

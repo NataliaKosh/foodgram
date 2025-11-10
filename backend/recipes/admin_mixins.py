@@ -12,9 +12,7 @@ class RelatedCountAdminMixin:
         qs = super().get_queryset(request)
         field_name = self.count_field_name or self.related_name
         if field_name:
-            qs = qs.annotate(**{field_name: Count(
-                self.related_name, distinct=True)
-            })
+            qs = qs.annotate(**{field_name: Count(self.related_name, distinct=True)})
         return qs
 
     def count_display(self, obj):
@@ -22,6 +20,10 @@ class RelatedCountAdminMixin:
         return getattr(obj, field_name, 0)
 
     def get_count_display(self):
+        """Возвращает метод для отображения в list_display с description"""
         return admin.display(
             description=self.display_name
         )(self.count_display)
+
+    def recipes_count(self, obj):
+        return self.count_display(obj)
