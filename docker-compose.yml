@@ -36,6 +36,7 @@ services:
     command: cp -r /app/build/* /frontend_static/
     volumes:
       - static_volume:/frontend_static
+      - ./docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
     networks:
       - foodgram_network
 
