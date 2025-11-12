@@ -36,7 +36,6 @@ services:
     command: cp -r /app/build/* /frontend_static/
     volumes:
       - static_volume:/frontend_static
-      - ./build/docs:/frontend_static/docs
     networks:
       - foodgram_network
 
