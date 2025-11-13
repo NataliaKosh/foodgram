@@ -90,6 +90,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def _add_remove_relation(self, request, pk, model):
         """Добавление или удаление рецепта из избранного / корзины."""
         action_name = model._meta.verbose_name
+        recipe = get_object_or_404(Recipe, pk=pk)
 
         if request.method != 'POST':
             get_object_or_404(
