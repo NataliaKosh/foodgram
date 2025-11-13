@@ -30,7 +30,7 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
         "full_name",
         "email",
         "avatar_preview",
-        "recipes_count",
+        RelatedCountAdminMixin.get_count_display,
         "subscriptions_count",
         "followers_count",
     )
