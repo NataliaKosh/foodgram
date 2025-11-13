@@ -30,10 +30,11 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
         "full_name",
         "email",
         "avatar_preview",
-        RelatedCountAdminMixin.get_count_display,
+        "get_recipes_count_display",
         "subscriptions_count",
         "followers_count",
     )
+
     list_filter = (
         "is_staff",
         "is_active",
@@ -43,28 +44,29 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
     )
     search_fields = ("username", "email")
     ordering = ("id",)
+    related_name = "recipes"
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
     def get_queryset(self, request):
-        """Оптимизируем запрос — добавляем аннотации для подсчётов"""
         queryset = (
             super()
             .get_queryset(request)
             .annotate(
                 _recipes_count=Count("recipes", distinct=True),
                 _subscriptions_count=Count("subscribers", distinct=True),
-                _followers_count=Count(
-                    "subscriptions_for_author", distinct=True
-                ),
+                _followers_count=Count("subscriptions_for_author", distinct=True),
             )
         )
         return queryset
 
+    get_recipes_count_display = RelatedCountAdminMixin.get_count_display(
+        RelatedCountAdminMixin
+    )
+
     @staticmethod
     @mark_safe
     def avatar_preview(obj):
-        """Превью аватара в списке пользователей"""
         if obj.avatar:
             return (
                 f'<img src="{obj.avatar.url}" width="50" height="50" '
