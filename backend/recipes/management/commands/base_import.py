@@ -1,5 +1,4 @@
 import json
-import os
 
 from django.core.management.base import BaseCommand
 
@@ -15,17 +14,18 @@ class BaseImportCommand(BaseCommand):
             self.stderr.write(
                 self.style.ERROR("Не указаны model или filepath")
             )
-        return
+            return
 
         try:
-            full_path = os.path.join('data', self.filepath)
+            full_path = f'data/{self.filepath}'
             with open(full_path, encoding='utf-8') as f:
-                created_objs = self.model.objects.bulk_create(
+                created = self.model.objects.bulk_create(
                     self.model(**item) for item in json.load(f)
                 )
+
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"{len(created_objs)} объектов {self.model.__name__} "
+                    f"{len(created)} объектов {self.model.__name__} "
                     f"из файла {self.filepath} импортировано"
                 )
             )
