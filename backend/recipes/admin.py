@@ -55,7 +55,10 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
             .annotate(
                 _recipes_count=Count("recipes", distinct=True),
                 _subscriptions_count=Count("subscribers", distinct=True),
-                _followers_count=Count("subscriptions_for_author", distinct=True),
+                _followers_count=Count(
+                    "subscriptions_for_author",
+                    distinct=True,
+                ),
             )
         )
         return queryset
