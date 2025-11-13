@@ -2,6 +2,7 @@ from collections import Counter
 
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 
@@ -51,12 +52,11 @@ class SetAvatarSerializer(serializers.ModelSerializer):
 
     def validate_avatar(self, avatar):
         """Проверяет размер загружаемого аватара."""
-        if (
-            avatar and hasattr(avatar, 'size')
-            and avatar.size > 2 * 1024 * 1024
-        ):
+        max_size = settings.FOODGRAM['MAX_AVATAR_SIZE']
+        if avatar and hasattr(avatar, 'size') and avatar.size > max_size:
+            max_mb = max_size / (1024 * 1024)
             raise serializers.ValidationError(
-                'Размер файла не должен превышать 2MB'
+                f'Размер файла не должен превышать {max_mb:.1f} MB'
             )
         return avatar
 

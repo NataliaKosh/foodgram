@@ -178,6 +178,7 @@ USE_TZ = True
 FOODGRAM = {
     'DEFAULT_PAGE_SIZE': 6,
     'MAX_PAGE_SIZE': 100,
+    'MAX_AVATAR_SIZE': 2 * 1024 * 1024,
 }
 
 # Настройки для медиа-файлов
