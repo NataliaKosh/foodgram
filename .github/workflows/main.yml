@@ -173,7 +173,7 @@ jobs:
           docker compose exec backend python manage.py collectstatic --noinput
           docker compose run --rm frontend cp -r /app/build/. /static/
           docker system prune -af
-          docker compose up -d gateway # Удалить потом 
+
 
     - name: Send Telegram notification
       uses: appleboy/telegram-action@master
