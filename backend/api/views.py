@@ -105,7 +105,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         if not created:
             raise ValidationError(
-                f'Рецепт уже добавлен в {action_name}'
+                f'Рецепт "{recipe.name}" уже добавлен в {action_name}'
             )
 
         return Response(
@@ -163,7 +163,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт."""
         if not Recipe.objects.filter(pk=pk).exists():
-            raise ValidationError({'detail': 'Рецепт не найден'})
+            raise ValidationError(
+                {'detail': f'Рецепт с id={pk} не найден'}
+            )
 
         return Response(
             {
