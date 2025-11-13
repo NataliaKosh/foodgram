@@ -47,7 +47,7 @@ services:
     volumes:
       - static_volume:/static
       - media_volume:/app/media
-      - ./docs/:/usr/share/nginx/html/docs/
+      - ./backend/docs:/usr/share/nginx/html/api/docs/
     ports:
       - "80:80"
     depends_on:
@@ -55,6 +55,7 @@ services:
       - frontend
     networks:
       - foodgram_network
+
 
 networks:
   foodgram_network:
