@@ -27,6 +27,9 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
     related_name = "recipes"
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
+
+    UserAdmin.register_count_display()
+
     list_display = (
         "id",
         "username",
@@ -37,6 +40,7 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
         "subscriptions_count",
         "followers_count",
     )
+
     list_filter = (
         "is_staff",
         "is_active",
@@ -44,6 +48,7 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
         ("subscriptions_for_author", admin.EmptyFieldListFilter),
         ("subscribers", admin.EmptyFieldListFilter),
     )
+
     search_fields = ("username", "email")
     ordering = ("id",)
 
