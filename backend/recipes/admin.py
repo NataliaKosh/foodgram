@@ -24,13 +24,15 @@ from .admin_mixins import RelatedCountAdminMixin
 
 @admin.register(User)
 class UserAdmin(RelatedCountAdminMixin, UserAdmin):
-    list_display = (
-        *UserAdmin.list_display,
-        "avatar_preview",
-        "recipes_count",
-        "subscriptions_count",
-        "followers_count",
-    )
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        base_list_display = list(super().get_list_display(request=None))
+        self.list_display = base_list_display + [
+            "avatar_preview",
+            "recipes_count",
+            "subscriptions_count",
+            "followers_count",
+        ]
 
     list_filter = (
         "is_staff",
@@ -94,7 +96,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "slug", "recipes_count")
+    list_display = ("name", "slug", "recipes_count_display")
     search_fields = ("name", "slug")
     list_filter = (TagUsedInRecipesFilter,)
 
@@ -105,7 +107,7 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "measurement_unit", "recipes_count")
+    list_display = ("name", "measurement_unit", "recipes_count_display")
     search_fields = ("name", "measurement_unit", "slug")
     list_filter = ("measurement_unit", UsedInRecipesFilter)
 

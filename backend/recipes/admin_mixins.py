@@ -21,8 +21,11 @@ class RelatedCountAdminMixin:
         field_name = self.count_field_name or self.related_name
         return getattr(obj, field_name, 0)
 
-    def get_count_display(self):
-        """Возвращает метод для отображения в list_display с description"""
-        return admin.display(
-            description=self.display_name
-        )(self.count_display)
+    @property
+    def recipes_count_display(self):
+        """Создает метод для отображения количества рецептов"""
+        def method(obj):
+            return self.count_display(obj)
+        method.__name__ = 'recipes_count_display'
+        method.short_description = self.display_name
+        return admin.display(description=self.display_name)(method)
