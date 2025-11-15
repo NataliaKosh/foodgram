@@ -87,12 +87,15 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author')
+    list_display = ('subscription_key', 'user', 'author')
     list_filter = ('user',)
     search_fields = (
         'user__email', 'user__username', 'author__email', 'author__username'
     )
 
+    @admin.display(description='ID')
+    def subscription_key(self, obj):
+        return obj.id
 
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
