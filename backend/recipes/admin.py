@@ -65,7 +65,6 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
             _followers_count=Count("subscriptions_for_author", distinct=True),
         )
 
-    @admin.display(description="Аватар")
     @staticmethod
     @mark_safe
     def avatar_preview(obj):
@@ -76,6 +75,8 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
                 'style="border-radius: 50%;">'
             )
         return "—"
+
+    avatar_preview.short_description = "Аватар"
 
     @admin.display(description="ФИО")
     def full_name(self, obj):
