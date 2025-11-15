@@ -54,18 +54,18 @@ class CookingTimeFilter(admin.SimpleListFilter):
     parameter_name = "cooking_time_group"
 
     def lookups(self, request, model_admin):
-        qs = (
+        cooking_times = (
             model_admin.get_queryset(request)
             .order_by("cooking_time")
             .values_list("cooking_time", flat=True)
             .distinct()
         )
 
-        if qs.count() < 3:
+        if cooking_times.count() < 3:
             return ()
 
-        fast_limit = qs[qs.count() // 3]
-        medium_limit = qs[2 * qs.count() // 3]
+        fast_limit = cooking_times[cooking_times.count() // 3]
+        medium_limit = cooking_times[2 * cooking_times.count() // 3]
 
         self.time_ranges = {
             "fast": (0, fast_limit),
