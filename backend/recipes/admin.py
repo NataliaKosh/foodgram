@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User as AuthUser
 from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.utils.safestring import mark_safe
@@ -31,7 +31,7 @@ except admin.sites.NotRegistered:
 
 
 @admin.register(User)
-class UserAdmin(RelatedCountAdminMixin, UserAdmin):
+class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         base_list_display = list(super().get_list_display(request=None))
@@ -58,12 +58,9 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
 
     readonly_fields = ('avatar_preview_form',)
 
-    fieldsets = (
+    fieldsets = BaseUserAdmin.fieldsets + (
         ("Аватар пользователя", {
-            "fields": (
-                "avatar",
-                "avatar_preview_form",
-            ),
+            "fields": ("avatar", "avatar_preview_form"),
         }),
     )
 
