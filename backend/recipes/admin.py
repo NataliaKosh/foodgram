@@ -23,20 +23,11 @@ from .admin_mixins import RelatedCountAdminMixin
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin, RelatedCountAdminMixin):
-    related_name = "recipes"
-    count_field_name = "_recipes_count"
-    display_name = "Рецептов"
-
-    UserAdmin.register_count_display()
-
+class UserAdmin(RelatedCountAdminMixin, UserAdmin):
     list_display = (
-        "id",
-        "username",
-        "full_name",
-        "email",
+        *UserAdmin.list_display,
         "avatar_preview",
-        *RelatedCountAdminMixin.count_list_display,
+        "recipes_count",
         "subscriptions_count",
         "followers_count",
     )
@@ -48,27 +39,26 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
         ("subscriptions_for_author", admin.EmptyFieldListFilter),
         ("subscribers", admin.EmptyFieldListFilter),
     )
-
     search_fields = ("username", "email")
     ordering = ("id",)
 
+    related_name = "recipes"
+    count_field_name = "_recipes_count"
+    display_name = "Рецептов"
+
     def get_queryset(self, request):
-        queryset = (
-            super()
-            .get_queryset(request)
-            .annotate(
-                _subscriptions_count=Count("subscribers", distinct=True),
-                _followers_count=Count(
-                    "subscriptions_for_author",
-                    distinct=True,
-                ),
-            )
+        """Оптимизируем запрос — добавляем аннотации для подсчётов"""
+        queryset = super().get_queryset(request)
+        return queryset.annotate(
+            _recipes_count=Count("recipes", distinct=True),
+            _subscriptions_count=Count("subscribers", distinct=True),
+            _followers_count=Count("subscriptions_for_author", distinct=True),
         )
-        return queryset
 
     @staticmethod
     @mark_safe
     def avatar_preview(obj):
+        """Превью аватара в списке пользователей"""
         if obj.avatar:
             return (
                 f'<img src="{obj.avatar.url}" width="50" height="50" '
@@ -79,6 +69,10 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
     @admin.display(description="ФИО")
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
+
+    @admin.display(description="Рецептов")
+    def recipes_count(self, obj):
+        return obj._recipes_count
 
     @admin.display(description="Подписок")
     def subscriptions_count(self, obj):
