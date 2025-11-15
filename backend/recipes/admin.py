@@ -56,6 +56,17 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
+    readonly_fields = ('avatar_preview_form',)
+
+    fieldsets = (
+        ("Аватар пользователя", {
+            "fields": (
+                "avatar",
+                "avatar_preview_form",
+            ),
+        }),
+    )
+
     def get_queryset(self, request):
         """Оптимизируем запрос — добавляем аннотации для подсчётов"""
         queryset = super().get_queryset(request)
@@ -65,7 +76,16 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
             _followers_count=Count("subscriptions_for_author", distinct=True),
         )
 
-    @staticmethod
+    @admin.display(description="Превью аватара")
+    @mark_safe
+    def avatar_preview_form(self, obj):
+        """Превью аватара на странице редактирования пользователя"""
+        if obj.avatar:
+            return f'<img src="{obj.avatar.url}" width="100" height="100" style="border-radius:50%;">'
+        return "—"
+
+    @admin.display(description="Аватар")
+    # @staticmethod
     @mark_safe
     def avatar_preview(obj):
         """Превью аватара в списке пользователей"""
@@ -75,8 +95,6 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
                 'style="border-radius: 50%;">'
             )
         return "—"
-
-    avatar_preview.short_description = "Аватар"
 
     @admin.display(description="ФИО")
     def full_name(self, obj):
