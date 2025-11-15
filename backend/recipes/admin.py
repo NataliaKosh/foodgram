@@ -81,7 +81,10 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
     def avatar_preview_form(self, obj):
         """Превью аватара на странице редактирования пользователя"""
         if obj.avatar:
-            return f'<img src="{obj.avatar.url}" width="100" height="100" style="border-radius:50%;">'
+            return (
+                f'<img src="{obj.avatar.url}" width="100" height="100" '
+                'style="border-radius:50%;">'
+            )
         return "—"
 
     @admin.display(description="Аватар")
