@@ -97,6 +97,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
     def subscription_key(self, obj):
         return obj.id
 
+
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "recipes_count_display")
