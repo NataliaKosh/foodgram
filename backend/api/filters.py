@@ -18,9 +18,9 @@ class RecipeFilter(django_filters.FilterSet):
             return queryset.none() if value else queryset
 
         qs = (
-            queryset.filter(favorite__user=user)
+            queryset.filter(favorites__user=user)
             if value
-            else queryset.exclude(favorite__user=user)
+            else queryset.exclude(favorites__user=user)
         )
         return qs.distinct()
 
@@ -30,9 +30,9 @@ class RecipeFilter(django_filters.FilterSet):
             return queryset.none() if value else queryset
 
         qs = (
-            queryset.filter(shoppingcart__user=user)
+            queryset.filter(shoppingcarts__user=user)
             if value
-            else queryset.exclude(shoppingcart__user=user)
+            else queryset.exclude(shoppingcarts__user=user)
         )
         return qs.distinct()
 
