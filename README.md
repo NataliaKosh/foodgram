@@ -84,7 +84,7 @@ venv\Scripts\activate      # Windows
 ```
 7. Запустить сервер разработки:
 ```bash
-   * python manage.py runserver
+   python manage.py runserver
 ```
 Доступы после запуска:
 
