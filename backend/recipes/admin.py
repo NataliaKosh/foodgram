@@ -100,7 +100,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "slug", "recipes_count_display")
+    list_display = ("id", "name", "slug", "recipes_count_display")
     search_fields = ("name", "slug")
     list_filter = (TagUsedInRecipesFilter,)
 
@@ -111,7 +111,7 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "measurement_unit", "recipes_count_display")
+    list_display = ("id", "name", "measurement_unit", "recipes_count_display")
     search_fields = ("name", "measurement_unit", "slug")
     list_filter = ("measurement_unit", UsedInRecipesFilter)
 
@@ -217,15 +217,15 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount')
-    list_filter = ('recipe', 'ingredient')
-    search_fields = ('recipe__name', 'ingredient__name')
+    list_display = ("id", "recipe", "ingredient", "amount")
+    list_filter = ("recipe", "ingredient")
+    search_fields = ("recipe__name", "ingredient__name")
 
 
 @admin.register(ShoppingCart)
 @admin.register(Favorite)
 class UserRecipeRelationAdmin(admin.ModelAdmin):
-    list_display = ("user", "recipe", "user_email")
+    list_display = ("id", "user", "recipe", "user_email")
     list_filter = ("user", "recipe")
     search_fields = ("user__email", "user__username", "recipe__name")
 
