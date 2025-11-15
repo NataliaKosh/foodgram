@@ -7,7 +7,7 @@ Foodgram — это современная веб-платформа, где п�
 ## Автор
 
 * Наталия Васильева
-* E-mail: nataliakosh17@gmail.com
+* [Написать на e-mail](mailto:nataliakosh17@gmail.com)
 
 
 ## Основные возможности
@@ -48,15 +48,18 @@ Frontend: React (SPA)
 Локальный запуск без Docker:
 
 1. Создать и активировать виртуальное окружение:
-
-   * python -m venv venv
-   * source venv/bin/activate   (Linux/macOS)
-   * venv\Scripts\activate      (Windows)
+```bash
+python -m venv venv
+source venv/bin/activate   # Linux/macOS
+venv\Scripts\activate      # Windows
+```
 2. Установить зависимости:
-
-   * pip install --upgrade pip
-   * pip install -r requirements.txt
+```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+```
 3. Создать .env файл с переменными окружения:
+```python
    SECRET_KEY=ваш_секретный_ключ
    DEBUG=True
    POSTGRES_USER=foodgram_user
@@ -65,50 +68,56 @@ Frontend: React (SPA)
    DB_HOST=localhost
    DB_PORT=5432
    ALLOWED_HOSTS=localhost,127.0.0.1
+```
 4. Применить миграции:
-
-   * python manage.py makemigrations
-   * python manage.py migrate
+```bash
+   python manage.py migrate
+```
 5. Импорт данных (фикстуры):
-
-   * python manage.py import_tags
-   * python manage.py import_ingredients
+```bash
+   python manage.py import_tags
+   python manage.py import_ingredients
+```
 6. Создать суперпользователя (для доступа к админке):
-
-   * python manage.py createsuperuser
+```bash
+   python manage.py createsuperuser
+```
 7. Запустить сервер разработки:
-
+```bash
    * python manage.py runserver
-
+```
 Доступы после запуска:
 
-* API документация: http://127.0.0.1:8000/api/
-* Админка Django: http://127.0.0.1:8000/admin/
-* Сервер: http://127.0.0.1:8000/
+* [API документация](http://127.0.0.1:8000/api/)
+* [Админка Django](http://127.0.0.1:8000/admin/)
+* [Сервер](http://127.0.0.1:8000/)
 
 Запуск через Docker (продакшн):
 
 1. Создать .env с нужными переменными (аналогично локальному запуску)
 2. Запустить Docker Compose:
-
-   * docker compose -f docker_compose.production.yml up -d
+```bash
+   docker compose -f docker_compose.production.yml up -d
+```
 3. Выполнить миграции и собрать статику:
-
-   * docker compose run --rm backend python manage.py makemigrations
-   * docker compose run --rm backend python manage.py migrate
-   * docker compose exec backend python manage.py collectstatic --noinput
+```bash
+   docker compose run --rm backend python manage.py migrate
+   docker compose exec backend python manage.py collectstatic --noinput
+```
 4. Импорт данных:
-
-   * docker compose run --rm backend python manage.py import_tags
-   * docker compose run --rm backend python manage.py import_ingredients
-
+```bash
+   docker compose run --rm backend python manage.py import_tags
+   docker compose run --rm backend python manage.py import_ingredients
+```
 Команды для тестов:
 
-* Проверка кода линтером: flake8 backend/
-
+* Проверка кода линтером: 
+```bash
+   flake8 backend/
+```
 Полезные ссылки:
 
-* Документация Django REST Framework: https://www.django-rest-framework.org/
-* Djoser — аутентификация Django REST: https://djoser.readthedocs.io/
-* Docker документация: https://docs.docker.com/
+* [Документация Django REST Framework](https://www.django-rest-framework.org/)
+* [Djoser — аутентификация Django REST](https://djoser.readthedocs.io/)
+* [Docker документация](https://docs.docker.com/)
 ---
