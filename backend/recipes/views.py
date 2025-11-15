@@ -1,5 +1,5 @@
-from django.shortcuts import redirect
 from django.http import Http404
+from django.shortcuts import redirect
 
 from .models import Recipe
 

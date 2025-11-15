@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group, User as AuthUser
 from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.utils.safestring import mark_safe
 from django.db.models import Count
@@ -20,6 +21,13 @@ from .models import (
     Subscription
 )
 from .admin_mixins import RelatedCountAdminMixin
+
+
+admin.site.unregister(Group)
+try:
+    admin.site.unregister(AuthUser)
+except admin.sites.NotRegistered:
+    pass
 
 
 @admin.register(User)
@@ -57,6 +65,7 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
             _followers_count=Count("subscriptions_for_author", distinct=True),
         )
 
+    @admin.display(description="Аватар")
     @staticmethod
     @mark_safe
     def avatar_preview(obj):
