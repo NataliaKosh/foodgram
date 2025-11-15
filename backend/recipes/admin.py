@@ -90,7 +90,7 @@ class UserAdmin(RelatedCountAdminMixin, UserAdmin):
     @admin.display(description="Аватар")
     # @staticmethod
     @mark_safe
-    def avatar_preview(obj):
+    def avatar_preview(self, obj):
         """Превью аватара в списке пользователей"""
         if obj.avatar:
             return (
