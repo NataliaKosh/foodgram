@@ -24,17 +24,19 @@ from .admin_mixins import RelatedCountAdminMixin
 
 @admin.register(User)
 class UserAdmin(UserAdmin, RelatedCountAdminMixin):
+    related_name = "recipes"
+    count_field_name = "_recipes_count"
+    display_name = "Рецептов"
     list_display = (
         "id",
         "username",
         "full_name",
         "email",
         "avatar_preview",
-        "get_recipes_count_display",
+        *RelatedCountAdminMixin.count_list_display,
         "subscriptions_count",
         "followers_count",
     )
-
     list_filter = (
         "is_staff",
         "is_active",
@@ -44,16 +46,12 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
     )
     search_fields = ("username", "email")
     ordering = ("id",)
-    related_name = "recipes"
-    count_field_name = "_recipes_count"
-    display_name = "Рецептов"
 
     def get_queryset(self, request):
         queryset = (
             super()
             .get_queryset(request)
             .annotate(
-                _recipes_count=Count("recipes", distinct=True),
                 _subscriptions_count=Count("subscribers", distinct=True),
                 _followers_count=Count(
                     "subscriptions_for_author",
@@ -62,10 +60,6 @@ class UserAdmin(UserAdmin, RelatedCountAdminMixin):
             )
         )
         return queryset
-
-    get_recipes_count_display = RelatedCountAdminMixin.get_count_display(
-        RelatedCountAdminMixin
-    )
 
     @staticmethod
     @mark_safe
