@@ -35,12 +35,22 @@ class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         base_list_display = list(super().get_list_display(request=None))
-        self.list_display = base_list_display + [
-            "avatar_preview",
-            "recipes_count",
-            "subscriptions_count",
-            "followers_count",
-        ]
+
+        for field in ("first_name", "last_name", "is_staff"):
+            if field in base_list_display:
+                base_list_display.remove(field)
+
+        self.list_display = (
+            ["id"]
+            + base_list_display
+            + [
+                "full_name",
+                "avatar_preview",
+                "recipes_count",
+                "subscriptions_count",
+                "followers_count",
+            ]
+        )
 
     list_filter = (
         "is_staff",
@@ -85,7 +95,6 @@ class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
         return "—"
 
     @admin.display(description="Аватар")
-    # @staticmethod
     @mark_safe
     def avatar_preview(self, obj):
         """Превью аватара в списке пользователей"""
