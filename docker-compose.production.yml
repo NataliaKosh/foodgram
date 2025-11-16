@@ -33,7 +33,18 @@ services:
   frontend:
     image: nataliakosh17/foodgram_frontend:latest
     env_file: .env
-    command: cp -r /app/build/* /frontend_static/
+    command: |
+      sh -c "
+      # Копируем все из build директории
+      cp -r /app/build/* /frontend_static/ &&
+      # Если есть вложенная static директория - перемещаем файлы наверх
+      if [ -d /frontend_static/static ]; then
+        echo 'Moving static files to root...' &&
+        mv /frontend_static/static/* /frontend_static/ 2>/dev/null || true &&
+        rm -rf /frontend_static/static 2>/dev/null || true &&
+        echo 'Static files moved successfully'
+      fi
+      "
     volumes:
       - static_volume:/frontend_static
     networks:
