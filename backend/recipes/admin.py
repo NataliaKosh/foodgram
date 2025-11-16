@@ -196,7 +196,7 @@ class RecipeAdmin(admin.ModelAdmin):
     @mark_safe
     def cooking_time_display(self, recipe):
         return recipe.cooking_time
-    
+
     @admin.display(description="Автор")
     def author_username(self, recipe):
         return recipe.author.username
