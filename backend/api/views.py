@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.timezone import now
 from django.template.loader import render_to_string
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import viewsets, status, permissions, filters
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -33,7 +33,7 @@ from .serializers import (
 )
 from .pagination import StandardPagination
 from .permissions import IsAuthorOrReadOnly
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientFilter
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -48,9 +48,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['^name']
-    search_param = 'name'
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
