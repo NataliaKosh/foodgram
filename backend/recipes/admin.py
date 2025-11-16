@@ -168,8 +168,8 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
-        "author",
-        "cooking_time",
+        "author_username",
+        "cooking_time_display",
         "favorites_count",
         "show_ingredients",
         "show_tags",
@@ -191,6 +191,15 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
     inlines = (RecipeIngredientInline,)
+
+    @admin.display(description="Время<br>(мин)")
+    @mark_safe
+    def cooking_time_display(self, recipe):
+        return recipe.cooking_time
+    
+    @admin.display(description="Автор")
+    def author_username(self, recipe):
+        return recipe.author.username
 
     @admin.display(description="Продукты")
     @mark_safe
