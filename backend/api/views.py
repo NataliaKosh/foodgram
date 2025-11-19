@@ -2,7 +2,7 @@ from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.urls import reverse
+# from django.urls import reverse
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -165,17 +165,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт."""
-        if not Recipe.objects.filter(pk=pk).exists():
-            raise ValidationError(
-                {'detail': f'Рецепт с id={pk} не найден'}
-            )
-
+        recipe = get_object_or_404(Recipe, pk=pk)
+        short_url = request.build_absolute_uri(f'/r/{recipe.pk}/')
         return Response(
-            {
-                'short-link': request.build_absolute_uri(
-                    reverse('recipe-short-link', args=[pk])
-                )
-            }
+            {'short-link': short_url},
+            status=status.HTTP_200_OK
         )
 
 
