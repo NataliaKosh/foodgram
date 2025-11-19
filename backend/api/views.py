@@ -138,7 +138,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).order_by('ingredient__name')
 
         recipes = Recipe.objects.filter(
-            in_shopping_carts__user=user
+            shoppingcart_recipe__user=user
         ).select_related('author')
 
         content = render_to_string(
