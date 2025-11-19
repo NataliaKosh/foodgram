@@ -81,7 +81,7 @@ class CookingTimeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         value = self.value()
-        if not value or value not in self.time_ranges:
+        if value not in self.time_ranges:
             return queryset
 
         return queryset.filter(cooking_time__range=self.time_ranges[value])
