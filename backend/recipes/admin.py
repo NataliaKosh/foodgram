@@ -168,7 +168,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("id", "name", "slug", "recipes_count_display")
+    list_display = ("id", "name", "slug")
     search_fields = ("name", "slug")
     list_filter = (TagUsedInRecipesFilter,)
 
@@ -179,8 +179,8 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("id", "name", "measurement_unit", "recipes_count_display")
-    search_fields = ("name", "measurement_unit", "slug")
+    list_display = ("id", "name", "measurement_unit")
+    search_fields = ("name", "measurement_unit")
     list_filter = ("measurement_unit", UsedInRecipesFilter)
 
     related_name = "recipes"
