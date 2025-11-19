@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group, User as AuthUser
 from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.utils.safestring import mark_safe
 from django.db.models import Count
+from django import forms
 
 from .admin_filters import (
     UsedInRecipesFilter,
@@ -122,6 +123,28 @@ class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
         return obj._followers_count
 
 
+class RecipeAdminForm(forms.ModelForm):
+    class Meta:
+        model = Recipe
+        fields = "__all__"
+
+    def clean(self):
+        return super().clean()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance and self.instance.image:
+            self.fields["image"].help_text = mark_safe(
+                f"""
+                <div style="display:flex; gap:20px; align-items:center;">
+                    <img src="{self.instance.image.url}"
+                         style="max-width:120px; border-radius:6px;">
+                </div>
+                """
+            )
+
+
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('subscription_key', 'user', 'author')
@@ -165,6 +188,7 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    form = RecipeAdminForm
     list_display = (
         "id",
         "name",
@@ -192,7 +216,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     inlines = (RecipeIngredientInline,)
 
-    @admin.display(description="Время<br>(мин)")
+    @admin.display(description=mark_safe("Время<br>мин"))
     @mark_safe
     def cooking_time_display(self, recipe):
         return recipe.cooking_time
