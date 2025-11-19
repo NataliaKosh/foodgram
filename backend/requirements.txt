@@ -8,3 +8,4 @@ python-dotenv==1.0.1
 flake8==7.0.0
 django-jazzmin==3.0.1
 django-filter==24.2
+short-url=-1.2.2
