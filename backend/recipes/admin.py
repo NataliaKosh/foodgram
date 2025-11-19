@@ -147,7 +147,7 @@ class RecipeAdminForm(forms.ModelForm):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('subscription_key', 'user', 'author')
+    list_display = ('subscription_key', 'user_username', 'author_username')
     list_filter = ('user',)
     search_fields = (
         'user__email', 'user__username', 'author__email', 'author__username'
@@ -156,6 +156,14 @@ class SubscriptionAdmin(admin.ModelAdmin):
     @admin.display(description='ID')
     def subscription_key(self, obj):
         return obj.id
+
+    @admin.display(description='Пользователь')
+    def user_username(self, obj):
+        return obj.user.username
+
+    @admin.display(description='Автор')
+    def author_username(self, obj):
+        return obj.author.username
 
 
 @admin.register(Tag)
@@ -295,9 +303,13 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 @admin.register(ShoppingCart)
 @admin.register(Favorite)
 class UserRecipeRelationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "recipe", "user_email")
+    list_display = ("id", "user_username", "recipe", "user_email")
     list_filter = ("user", "recipe")
     search_fields = ("user__email", "user__username", "recipe__name")
+
+    @admin.display(description="Пользователь")
+    def user_username(self, obj):
+        return obj.user.username
 
     @admin.display(description="Email пользователя")
     def user_email(self, obj):
