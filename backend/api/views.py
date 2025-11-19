@@ -1,6 +1,5 @@
-import short_url
 from django.db.models import Sum
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -167,15 +166,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         """Получить короткую ссылку на рецепт."""
         if not Recipe.objects.filter(pk=pk).exists():
-            raise Http404(f'Рецепт {pk} не найден')
-
-        short_code = short_url.encode_url(int(pk))
-
-        return Response({
-            'short-link': request.build_absolute_uri(
-                reverse('recipes:short-link', args=[short_code])
+            raise ValidationError(
+                {'detail': f'Рецепт с id={pk} не найден'}
             )
-        })
+
+        return Response(
+            {
+                'short-link': request.build_absolute_uri(
+                    reverse('recipe-short-link', args=[pk])
+                )
+            }
+        )
 
 
 class UserViewSet(DjoserUserViewSet):
