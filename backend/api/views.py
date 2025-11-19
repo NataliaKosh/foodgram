@@ -1,15 +1,15 @@
 from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.timezone import now
-from django.template.loader import render_to_string
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import viewsets, status, permissions
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 from recipes.models import (
     Tag,
@@ -90,7 +90,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def _add_remove_relation(self, request, pk, model):
         """Добавление или удаление рецепта из избранного / корзины."""
         action_name = model._meta.verbose_name
-        recipe = get_object_or_404(Recipe, pk=pk)
 
         if request.method != 'POST':
             get_object_or_404(
@@ -100,10 +99,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+        recipe = get_object_or_404(Recipe, pk=pk)
+
         _, created = model.objects.get_or_create(
             user=request.user,
             recipe_id=pk,
         )
+
         if not created:
             raise ValidationError(
                 f'Рецепт "{recipe.name}" уже добавлен в {action_name}'
@@ -111,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(
             RecipeMinifiedSerializer(
-                get_object_or_404(Recipe, pk=pk),
+                recipe,
                 context={'request': request}
             ).data,
             status=status.HTTP_201_CREATED

@@ -1,8 +1,8 @@
 from collections import Counter
 
 from django.core.validators import MinValueValidator
-from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
 
