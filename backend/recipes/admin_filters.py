@@ -138,7 +138,9 @@ class HasFollowersFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(subscriptions_for_author__isnull=False).distinct()
+            return queryset.filter(
+                subscriptions_for_author__isnull=False
+            ).distinct()
         if self.value() == "no":
             return queryset.filter(subscriptions_for_author__isnull=True)
         return queryset
