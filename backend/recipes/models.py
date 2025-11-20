@@ -216,13 +216,13 @@ class UserRecipeRelation(models.Model):
         settings.AUTH_USER_MODEL,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
-        related_name="%(class)s_user"
+        related_name="%(class)ss"
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name="%(class)s_recipe"
+        related_name="%(class)ss"
     )
 
     class Meta:

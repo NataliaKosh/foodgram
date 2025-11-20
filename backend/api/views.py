@@ -128,7 +128,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         ingredients = RecipeIngredient.objects.filter(
-            recipe__shoppingcart_recipe__user=request.user
+            recipe__shoppingcarts__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
@@ -137,7 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).order_by('ingredient__name')
 
         recipes = Recipe.objects.filter(
-            shoppingcart_recipe__user=user
+            shoppingcarts__user=user
         ).select_related('author')
 
         content = render_to_string(
