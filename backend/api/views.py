@@ -2,7 +2,7 @@ from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import reverse, formats
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -140,12 +140,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
             shoppingcarts__user=user
         ).select_related('author')
 
+        current_date = now()
+        formatted_date = formats.date_format(current_date, "d E Y")
+
+        formatted_ingredients = []
+        for ingredient in ingredients:
+            name = ingredient['ingredient__name']
+            capitalized_name = name.capitalize()
+            formatted_ingredients.append({
+                'name': capitalized_name,
+                'measurement_unit': ingredient['ingredient__measurement_unit'],
+                'total_amount': ingredient['total_amount']
+            })
+
         content = render_to_string(
             'shopping_list.txt',
             {
-                'ingredients': ingredients,
+                'ingredients': formatted_ingredients,
                 'recipes': recipes,
-                'date': now().strftime('%d.%m.%Y'),
+                'date': formatted_date,
             }
         )
 
