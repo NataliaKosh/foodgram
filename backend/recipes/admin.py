@@ -9,7 +9,10 @@ from django import forms
 from .admin_filters import (
     UsedInRecipesFilter,
     TagUsedInRecipesFilter,
-    CookingTimeFilter
+    CookingTimeFilter,
+    HasRecipesFilter,
+    HasSubscriptionsFilter,
+    HasFollowersFilter
 )
 from .models import (
     Tag,
@@ -48,9 +51,9 @@ class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
     list_filter = (
         "is_staff",
         "is_active",
-        ("recipes", admin.EmptyFieldListFilter),
-        ("subscriptions_for_author", admin.EmptyFieldListFilter),
-        ("subscribers", admin.EmptyFieldListFilter),
+        HasRecipesFilter,
+        HasSubscriptionsFilter,
+        HasFollowersFilter,
     )
     search_fields = ("username", "email")
     ordering = ("id",)

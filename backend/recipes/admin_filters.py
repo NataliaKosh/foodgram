@@ -85,3 +85,60 @@ class CookingTimeFilter(admin.SimpleListFilter):
             return queryset
 
         return queryset.filter(cooking_time__range=self.time_ranges[value])
+
+
+class HasRecipesFilter(admin.SimpleListFilter):
+    """Фильтр пользователей по наличию рецептов"""
+    title = "Есть рецепты"
+    parameter_name = "has_recipes"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Есть рецепты"),
+            ("no", "Нет рецептов"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(recipes__isnull=False).distinct()
+        if self.value() == "no":
+            return queryset.filter(recipes__isnull=True)
+        return queryset
+
+
+class HasSubscriptionsFilter(admin.SimpleListFilter):
+    """Фильтр пользователей по наличию подписок"""
+    title = "Есть подписки"
+    parameter_name = "has_subscriptions"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Есть подписки"),
+            ("no", "Нет подписок"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(subscribers__isnull=False).distinct()
+        if self.value() == "no":
+            return queryset.filter(subscribers__isnull=True)
+        return queryset
+
+
+class HasFollowersFilter(admin.SimpleListFilter):
+    """Фильтр пользователей по наличию подписчиков"""
+    title = "Есть подписчики"
+    parameter_name = "has_followers"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Есть подписчики"),
+            ("no", "Нет подписчиков"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(subscriptions_for_author__isnull=False).distinct()
+        if self.value() == "no":
+            return queryset.filter(subscriptions_for_author__isnull=True)
+        return queryset
