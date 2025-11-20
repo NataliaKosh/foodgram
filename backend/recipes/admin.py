@@ -259,15 +259,15 @@ class RecipeAdmin(admin.ModelAdmin):
 
     @admin.display(description="В избранном")
     def favorites_count(self, recipe):
-        return recipe.favorites.count()
+        return recipe.favorite_recipe.count()
 
     @admin.display(description="В избранном")
     def favorites_count_display(self, recipe):
-        return recipe.favorites.count()
+        return recipe.favorite_recipe.count()
 
     @admin.display(description="В корзинах")
     def in_shopping_carts_count_display(self, recipe):
-        return recipe.shoppingcarts.count()
+        return recipe.shoppingcart_recipe.count()
 
     fieldsets = (
         ("Основная информация", {
