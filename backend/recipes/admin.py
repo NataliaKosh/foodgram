@@ -33,26 +33,18 @@ except admin.sites.NotRegistered:
 
 @admin.register(User)
 class UserAdmin(RelatedCountAdminMixin, BaseUserAdmin):
-    def __init__(self, model, admin_site):
-        super().__init__(model, admin_site)
-        base_list_display = list(super().get_list_display(request=None))
-
-        for field in ("first_name", "last_name", "is_staff"):
-            if field in base_list_display:
-                base_list_display.remove(field)
-
-        self.list_display = (
-            ["id"]
-            + base_list_display
-            + [
-                "full_name",
-                "avatar_preview",
-                "recipes_count",
-                "subscriptions_count",
-                "followers_count",
-            ]
-        )
-
+    list_display = (
+        "id",
+        "username",
+        "email",
+        "full_name",
+        "avatar_preview",
+        "recipes_count",
+        "subscriptions_count",
+        "followers_count",
+        "is_active",
+        "date_joined"
+    )
     list_filter = (
         "is_staff",
         "is_active",
@@ -168,7 +160,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("id", "name", "slug")
+    list_display = ("id", "name", "slug", "count_recipes")
     search_fields = ("name", "slug")
     list_filter = (TagUsedInRecipesFilter,)
 
@@ -176,16 +168,24 @@ class TagAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
 
+    @admin.display(description="Рецептов")
+    def count_recipes(self, obj):
+        return getattr(obj, self.count_field_name, 0)
+
 
 @admin.register(Ingredient)
 class IngredientAdmin(RelatedCountAdminMixin, admin.ModelAdmin):
-    list_display = ("id", "name", "measurement_unit")
+    list_display = ("id", "name", "measurement_unit", "count_recipes")
     search_fields = ("name", "measurement_unit")
     list_filter = ("measurement_unit", UsedInRecipesFilter)
 
     related_name = "recipes"
     count_field_name = "_recipes_count"
     display_name = "Рецептов"
+
+    @admin.display(description="Рецептов")
+    def count_recipes(self, obj):
+        return getattr(obj, self.count_field_name, 0)
 
 
 class RecipeIngredientInline(admin.TabularInline):
